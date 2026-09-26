@@ -18,7 +18,7 @@ def initialize_model(detector_model_path, recognizer_model_path, input_size=(0, 
 
     return detector, recognizer
 
-def extract_embedding(img_path):
+def extract_embedding(img_path, detector, recognizer):
     """Loads an image (handles high-res downscaling) and extracts SFace embedding."""
     img = cv2.imread(img_path)
     if img is None:
@@ -46,7 +46,7 @@ def extract_embedding(img_path):
     return recognizer.feature(face_aligned)
 
 # 2. Load Folder Structure into Memory
-def load_face_templates(dataset_dir):
+def load_face_templates(detector_model, recognizer_model, dataset_dir):
     """
     Scans folders, averages embeddings for people with multiple photos,
     and returns a dictionary: { "Person_Name": embedding_array }
@@ -74,7 +74,7 @@ def load_face_templates(dataset_dir):
             
         person_embeddings = []
         for img_path in image_paths:
-            embedding = extract_embedding(img_path)
+            embedding = extract_embedding(img_path=img_path, detector=detector_model, recognizer=recognizer_model)
             if embedding is not None:
                 person_embeddings.append(embedding)
                 
@@ -89,9 +89,9 @@ def load_face_templates(dataset_dir):
     return templates
 
 # 3. Match a Query Image Against Loaded Templates
-def identify_face_from_memory(query_img_path, templates):
+def identify_face_from_memory(detector_model, recognizer_model, query_img_path, templates):
     """Compares a new face image against the dictionary of loaded templates."""
-    query_feat = extract_embedding(query_img_path)
+    query_feat = extract_embedding(query_img_path, detector=detector_model, recognizer=recognizer_model)
     if query_feat is None:
         print("Could not detect a face in the query image.")
         return "Unknown"
@@ -102,23 +102,25 @@ def identify_face_from_memory(query_img_path, templates):
 
     # Loop through our dictionary keys and vector arrays
     for person_name, db_feat in templates.items():
-        score = recognizer.match(query_feat, db_feat, cv2.FaceRecognizerSF_FR_COSINE)
+        score = recognizer_model.match(query_feat, db_feat, cv2.FaceRecognizerSF_FR_COSINE)
         
         if score > highest_score:
             highest_score = score
             if score >= SFACE_THRESHOLD:
                 best_match_name = person_name
 
-    print(f"Result: Match found -> {best_match_name} (Score: {highest_score:.4f})")
+    print(f"Result: Match found -> {best_match_name} (Score: {highest_score:.4f}): {query_img_path}")
     return best_match_name
 
 
-def extract_all_faces(image_path, detector_model_path, recognizer_model_path, output_folder, score_threshold=0.5):
+def extract_all_faces(image_path, detector_model, recognizer_model, output_folder, score_threshold=0.5):
     # 1. Initialize OpenCV Zoo models
     # detector = cv2.FaceDetectorYN.create("Datasets/face_detection_yunet_2023mar.onnx", "", (0, 0), score_threshold=0.5)
-    detector = cv2.FaceDetectorYN.create(detector_model_path, "", (0, 0), score_threshold=score_threshold)
+    # detector = cv2.FaceDetectorYN.create(detector_model_path, "", (0, 0), score_threshold=score_threshold)
+    # detector = detector_model
     # recognizer = cv2.FaceRecognizerSF.create("Datasets/face_recognition_sface_2021dec.onnx", "")
-    recognizer = cv2.FaceRecognizerSF.create(recognizer_model_path, "")
+    # recognizer = cv2.FaceRecognizerSF.create(recognizer_model_path, "")
+    # recognizer = recognizer_model
 
     # Create destination folder if missing
     os.makedirs(output_folder, exist_ok=True)
@@ -136,14 +138,14 @@ def extract_all_faces(image_path, detector_model_path, recognizer_model_path, ou
     if w_orig > target_width:
         scale_factor = target_width / float(w_orig)
         img_small = cv2.resize(img, (target_width, int(h_orig * scale_factor)))
-        detector.setInputSize((img_small.shape[1], img_small.shape[0]))
-        _, faces = detector.detect(img_small)
+        detector_model.setInputSize((img_small.shape[1], img_small.shape[0]))
+        _, faces = detector_model.detect(img_small)
         if faces is not None:
             # Scale coordinates back to original size dimensions
             faces[:, :14] = faces[:, :14] / scale_factor
     else:
-        detector.setInputSize((w_orig, h_orig))
-        _, faces = detector.detect(img)
+        detector_model.setInputSize((w_orig, h_orig))
+        _, faces = detector_model.detect(img)
 
     # 4. Process and save each face found
     if faces is None or len(faces) == 0:
@@ -158,14 +160,31 @@ def extract_all_faces(image_path, detector_model_path, recognizer_model_path, ou
         
         try:
             # SFace extracts a perfectly aligned and cropped 112x112 portrait 
-            face_aligned = recognizer.alignCrop(img, single_face_input)
+            face_aligned = recognizer_model.alignCrop(img, single_face_input)
             
             # Save the cropped face profile to disk
-            output_filename = os.path.join(output_folder, f"face_{idx + 1}.png")
+            output_filename = os.path.join(output_folder, f"face_{idx + 1}.jpg")
             cv2.imwrite(output_filename, face_aligned)
             print(f" -> Saved: {output_filename}")
         except Exception as e:
             print(f" -> Failed to extract face index {idx + 1}: {e}")
 
     print(f"\nFinished! Check the '{output_folder}' directory for your images.")
+
+def files_from_folder(dataset_path = False):    
+    # The '**/*.jpg' means look through ALL subfolders for any .jpg file
+    subfolder_pattern = os.path.join(dataset_path, "**", "*.jpg")
+    all_subfolder_images = glob.glob(subfolder_pattern, recursive=True)
+
+    print(f"Found {len(all_subfolder_images)} images across all subfolders.")
+    for file_path in all_subfolder_images:
+        print(file_path)
+
+    return all_subfolder_images
+
+def ideentify_faces(detector_model, recognizer_model, face_database_dict, images_list):
+    for idx in images_list:
+        # identify_face_from_memory("Datasets/"+idx, face_database_dict)
+        identify_face_from_memory(detector_model=detector_model, recognizer_model=recognizer_model, 
+                            query_img_path=idx, templates=face_database_dict)
 
