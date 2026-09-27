@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import csv
 from datetime import datetime
-import uuid
 
 # ==========================================
 # 1. CONFIGURATION & MODEL INITIALIZATION
@@ -25,17 +24,10 @@ FRAME_HEIGHT = 480
 # ==========================================
 
 CAMERA_ID = "CAM01"
-# LOG_FILE = "face_recognition_log.csv"
-# LOG_INTERVAL_SEC = 20
+LOG_FILE = "face_recognition_log.csv"
+LOG_INTERVAL_SEC = 30
 
-# logged_faces = {}
-LOG_FILE = "face_tracking_log.csv"
-
-LOG_INTERVAL_SEC = 10      # change to 20 if required
-PERSON_TIMEOUT_SEC = 5
-
-tracked_persons = {}
-
+logged_faces = {}
 
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", newline="", encoding="utf-8") as f:
@@ -43,15 +35,9 @@ if not os.path.exists(LOG_FILE):
         writer.writerow([
             "Timestamp",
             "Camera_ID",
-            "Track_ID",
             "Person_ID",
             "Person_Name",
-            "Score",
-            "X",
-            "Y",
-            "W",
-            "H",
-            "Status"
+            "Score"
         ])
 
 # Initialize YuNet Face Detector with relaxed threshold for noisy/motion frames
@@ -142,43 +128,39 @@ def load_dataset_templates(dataset_path):
     print(f"[+] Indexing complete. {len(templates)} identities active in memory.\n")
     return templates
 
-def log_event(track_id, person_id, person_name, score, box, status):
+def log_recognition(person_id, person_name, score):
+    """
+    Save recognized face event.
+    Prevent duplicate logging within LOG_INTERVAL_SEC.
+    """
 
-    timestamp = datetime.now().strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
+    now = datetime.now()
 
-    x, y, w, h = box
+    if person_name in logged_faces:
+        elapsed = (now - logged_faces[person_name]).total_seconds()
 
-    with open(
-        LOG_FILE,
-        "a",
-        newline="",
-        encoding="utf-8"
-    ) as f:
+        if elapsed < LOG_INTERVAL_SEC:
+            return
 
+    logged_faces[person_name] = now
+
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(LOG_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-
         writer.writerow([
             timestamp,
             CAMERA_ID,
-            track_id,
             person_id,
             person_name,
-            round(float(score), 4),
-            x,
-            y,
-            w,
-            h,
-            status
+            round(float(score), 4)
         ])
 
     print(
-        f"[{status}] "
-        f"{timestamp} | "
+        f"[LOG] {timestamp} | "
         f"ID={person_id} | "
-        f"{person_name} | "
-        f"{score:.4f}"
+        f"Name={person_name} | "
+        f"Score={score:.4f}"
     )
 
 # ==========================================
@@ -282,59 +264,12 @@ def run_live_recognition():
                         # cached_detections.append((box, best_name, max_score))
                         box = face[0:4].astype(int)
 
-                        # if best_name != "Unknown":
-                        #     log_recognition(
-                        #         person_id=best_id,
-                        #         person_name=best_name,
-                        #         score=max_score
-                        #     )
                         if best_name != "Unknown":
-                            now = datetime.now()
-
-                            if best_name not in tracked_persons:
-
-                                track_id = str(uuid.uuid4())[:8]
-
-                                tracked_persons[best_name] = {
-                                    "track_id": track_id,
-                                    "person_id": best_id,
-                                    "last_seen": now,
-                                    "last_logged": now,
-                                    "best_score": max_score
-                                }
-
-                                log_event(
-                                    track_id,
-                                    best_id,
-                                    best_name,
-                                    max_score,
-                                    box,
-                                    "ENTER"
-                                )
-
-                            else:
-
-                                tracked_persons[best_name]["last_seen"] = now
-
-                                track_id = tracked_persons[best_name]["track_id"]
-
-                                elapsed = (
-                                    now -
-                                    tracked_persons[best_name]["last_logged"]
-                                ).total_seconds()
-
-                                if elapsed >= LOG_INTERVAL_SEC:
-
-                                    log_event(
-                                        track_id,
-                                        best_id,
-                                        best_name,
-                                        max_score,
-                                        box,
-                                        "PRESENT"
-                                    )
-
-                                    tracked_persons[best_name]["last_logged"] = now
+                            log_recognition(
+                                person_id=best_id,
+                                person_name=best_name,
+                                score=max_score
+                            )
 
                         cached_detections.append(
                             (
@@ -373,32 +308,6 @@ def run_live_recognition():
                 2
             )
 
-        now = datetime.now()
-
-        remove_list = []
-
-        for person_name, info in tracked_persons.items():
-
-            elapsed = (
-                now - info["last_seen"]
-            ).total_seconds()
-
-            if elapsed > PERSON_TIMEOUT_SEC:
-
-                log_event(
-                    info["track_id"],
-                    info["person_id"],
-                    person_name,
-                    info["best_score"],
-                    (0, 0, 0, 0),
-                    "EXIT"
-                )
-
-                remove_list.append(person_name)
-
-        for person_name in remove_list:
-            del tracked_persons[person_name]
-            
         cv2.imshow("SFace Live Recognition", frame_resized)
 
         # Press 'q' to gracefully shutdown
