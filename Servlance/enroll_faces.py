@@ -5,7 +5,7 @@ Builds a local face-embedding database from a folder of reference photos.
 
 Expected folder layout:
 
-    known_faces/
+    database/
         alice/
             alice_1.jpg
             alice_2.jpg
@@ -17,7 +17,8 @@ One or more photos per person improves matching accuracy (different angles/light
 Each subfolder name becomes the identity label.
 
 Usage:
-    python enroll_faces.py --input known_faces --output face_db.pkl
+    python enroll_faces.py --input database --output face_db.pkl
+    python enroll_faces.py --input ../database --output ../database/face_db.pk
 """
 
 import argparse
