@@ -1,0 +1,56 @@
+2026-09-27 07:26:12,789 - INFO - Initializing surveillance tracking system...
+2026-09-27 07:26:12,789 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 07:26:12,789 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 07:26:12,815 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 07:26:13,890 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 07:27:38,670 - INFO - Initializing surveillance tracking system...
+2026-09-27 07:27:38,670 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 07:27:38,670 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 07:27:38,696 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 07:27:39,825 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 07:27:42,534 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:27:42,717 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 07:28:02,323 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:28:02,723 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 07:28:10,970 - INFO - [TRACK UPDATE] Tracking ID: 4 | Identity: Unknown
+2026-09-27 07:28:22,347 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:28:31,113 - INFO - [TRACK UPDATE] Tracking ID: 4 | Identity: Unknown
+2026-09-27 07:28:32,991 - INFO - [TRACK UPDATE] Tracking ID: 6 | Identity: Unknown
+2026-09-27 07:28:42,223 - INFO - [TRACK UPDATE] Tracking ID: 8 | Identity: Unknown
+2026-09-27 07:28:42,397 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:29:02,445 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:29:19,984 - INFO - [TRACK UPDATE] Tracking ID: 11 | Identity: Unknown
+2026-09-27 07:29:22,495 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:29:36,644 - INFO - [TRACK UPDATE] Tracking ID: 19 | Identity: Unknown
+2026-09-27 07:29:42,534 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:29:46,135 - INFO - [TRACK UPDATE] Tracking ID: 21 | Identity: Unknown
+2026-09-27 07:30:02,587 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:30:03,792 - INFO - [TRACK UPDATE] Tracking ID: 23 | Identity: Unknown
+2026-09-27 07:30:16,604 - INFO - [TRACK UPDATE] Tracking ID: 32 | Identity: Unknown
+2026-09-27 07:30:22,628 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:30:37,586 - INFO - [TRACK UPDATE] Tracking ID: 34 | Identity: Unknown
+2026-09-27 07:30:42,680 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:30:46,808 - INFO - [TRACK UPDATE] Tracking ID: 36 | Identity: Unknown
+2026-09-27 07:30:56,629 - INFO - [TRACK UPDATE] Tracking ID: 39 | Identity: Unknown
+2026-09-27 07:31:02,721 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:31:22,769 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:31:25,975 - INFO - [TRACK UPDATE] Tracking ID: 42 | Identity: Unknown
+2026-09-27 07:31:30,686 - INFO - [TRACK UPDATE] Tracking ID: 44 | Identity: Unknown
+2026-09-27 07:31:42,813 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:31:52,723 - INFO - [TRACK UPDATE] Tracking ID: 51 | Identity: Unknown
+2026-09-27 07:32:02,864 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:32:22,909 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:32:42,951 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:33:03,002 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:33:23,044 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:33:43,097 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:33:50,078 - INFO - [TRACK UPDATE] Tracking ID: 79 | Identity: Unknown
+2026-09-27 07:34:03,137 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:34:23,190 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:34:43,234 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:34:44,454 - INFO - [TRACK UPDATE] Tracking ID: 83 | Identity: Unknown
+2026-09-27 07:35:03,279 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:35:09,602 - INFO - [TRACK UPDATE] Tracking ID: 84 | Identity: Unknown
+2026-09-27 07:35:20,554 - INFO - [TRACK UPDATE] Tracking ID: 86 | Identity: Unknown
+2026-09-27 07:35:23,323 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 07:35:27,173 - INFO - Video stream closed by user. Exiting pipeline.
