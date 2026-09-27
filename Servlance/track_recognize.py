@@ -5,7 +5,8 @@ import cv2
 from ultralytics import YOLO
 
 model = YOLO("yolo26n.pt")
-cap = cv2.VideoCapture("../Datasets/input_video.mp4")
+# cap = cv2.VideoCapture("../Datasets/input_video.mp4")
+cap = cv2.VideoCapture("../Datasets/recorded_cam.mp4")
 
 while cap.isOpened():
     success, frame = cap.read()

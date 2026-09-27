@@ -54,3 +54,198 @@
 2026-09-27 07:35:20,554 - INFO - [TRACK UPDATE] Tracking ID: 86 | Identity: Unknown
 2026-09-27 07:35:23,323 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.72)
 2026-09-27 07:35:27,173 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:18:47,528 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:18:47,528 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:18:47,529 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:18:47,555 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:18:48,673 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:18:51,471 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.78)
+2026-09-27 13:18:51,525 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 13:18:54,574 - INFO - [TRACK UPDATE] Tracking ID: 4 | Identity: Unknown
+2026-09-27 13:18:56,765 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:19:07,851 - INFO - [TRACK UPDATE] Tracking ID: 13 | Identity: Unknown
+2026-09-27 13:19:10,440 - INFO - [TRACK UPDATE] Tracking ID: 14 | Identity: Unknown
+2026-09-27 13:19:11,037 - INFO - [TRACK UPDATE] Tracking ID: 15 | Identity: Unknown
+2026-09-27 13:19:11,284 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.78)
+2026-09-27 13:19:12,991 - INFO - [TRACK UPDATE] Tracking ID: 20 | Identity: Unknown
+2026-09-27 13:19:13,265 - INFO - [TRACK UPDATE] Tracking ID: 22 | Identity: Unknown
+2026-09-27 13:19:14,608 - INFO - [TRACK UPDATE] Tracking ID: 4 | Identity: Unknown
+2026-09-27 13:19:16,675 - INFO - [TRACK UPDATE] Tracking ID: 25 | Identity: Unknown
+2026-09-27 13:20:03,466 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:20:03,466 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:20:03,467 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:20:03,492 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:20:04,593 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:20:07,419 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:20:07,466 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 13:20:07,619 - INFO - [TRACK UPDATE] Tracking ID: 3 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:20:23,535 - INFO - [TRACK UPDATE] Tracking ID: 8 | Identity: Unknown
+2026-09-27 13:20:27,239 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:20:27,239 - INFO - [TRACK UPDATE] Tracking ID: 3 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:20:33,097 - INFO - [TRACK UPDATE] Tracking ID: 14 | Identity: Unknown
+2026-09-27 13:20:39,137 - INFO - [TRACK UPDATE] Tracking ID: 15 | Identity: Unknown
+2026-09-27 13:20:39,370 - INFO - [TRACK UPDATE] Tracking ID: 17 | Identity: Sunny Singh (0.62)
+2026-09-27 13:20:44,113 - INFO - [TRACK UPDATE] Tracking ID: 20 | Identity: Unknown
+2026-09-27 13:20:47,279 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:20:47,279 - INFO - [TRACK UPDATE] Tracking ID: 3 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:20:51,120 - INFO - [TRACK UPDATE] Tracking ID: 30 | Identity: Sunny Singh (0.55)
+2026-09-27 13:20:53,200 - INFO - [TRACK UPDATE] Tracking ID: 41 | Identity: Unknown
+2026-09-27 13:20:53,758 - INFO - [TRACK UPDATE] Tracking ID: 43 | Identity: Nivan Tyagi (0.66)
+2026-09-27 13:20:55,529 - INFO - [TRACK UPDATE] Tracking ID: 47 | Identity: Unknown
+2026-09-27 13:20:59,251 - INFO - [TRACK UPDATE] Tracking ID: 52 | Identity: Unknown
+2026-09-27 13:21:02,611 - INFO - [TRACK UPDATE] Tracking ID: 55 | Identity: Unknown
+2026-09-27 13:21:03,359 - INFO - [TRACK UPDATE] Tracking ID: 57 | Identity: Unknown
+2026-09-27 13:21:04,931 - INFO - [TRACK UPDATE] Tracking ID: 63 | Identity: Nivan Tyagi (0.72)
+2026-09-27 13:21:14,221 - INFO - [TRACK UPDATE] Tracking ID: 67 | Identity: Nivan Tyagi (0.54)
+2026-09-27 13:21:18,361 - INFO - [TRACK UPDATE] Tracking ID: 70 | Identity: Unknown
+2026-09-27 13:21:21,067 - INFO - [TRACK UPDATE] Tracking ID: 73 | Identity: Nivan Tyagi (0.48)
+2026-09-27 13:21:22,790 - INFO - [TRACK UPDATE] Tracking ID: 79 | Identity: Unknown
+2026-09-27 13:21:23,389 - INFO - [TRACK UPDATE] Tracking ID: 57 | Identity: Unknown
+2026-09-27 13:21:38,396 - INFO - [TRACK UPDATE] Tracking ID: 70 | Identity: Unknown
+2026-09-27 13:21:41,327 - INFO - [TRACK UPDATE] Tracking ID: 81 | Identity: Unknown
+2026-09-27 13:21:51,955 - INFO - [TRACK UPDATE] Tracking ID: 84 | Identity: Unknown
+2026-09-27 13:21:56,714 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:22:01,255 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:22:01,256 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:22:01,256 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:22:01,284 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:22:02,372 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:22:05,181 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.79)
+2026-09-27 13:22:05,231 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 13:22:05,851 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:22:09,147 - INFO - [TRACK UPDATE] Tracking ID: 7 | Identity: Unknown
+2026-09-27 13:22:20,384 - INFO - [TRACK UPDATE] Tracking ID: 10 | Identity: Unknown
+2026-09-27 13:22:25,013 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.79)
+2026-09-27 13:22:29,002 - INFO - [TRACK UPDATE] Tracking ID: 7 | Identity: Unknown
+2026-09-27 13:22:31,399 - INFO - [TRACK UPDATE] Tracking ID: 24 | Identity: Unknown
+2026-09-27 13:22:31,886 - INFO - [TRACK UPDATE] Tracking ID: 26 | Identity: Unknown
+2026-09-27 13:22:31,938 - INFO - [TRACK UPDATE] Tracking ID: 27 | Identity: Unknown
+2026-09-27 13:22:32,063 - INFO - [TRACK UPDATE] Tracking ID: 28 | Identity: Unknown
+2026-09-27 13:22:32,547 - INFO - [TRACK UPDATE] Tracking ID: 29 | Identity: Tejrit Tyagi (0.50)
+2026-09-27 13:22:35,457 - INFO - [TRACK UPDATE] Tracking ID: 39 | Identity: Unknown
+2026-09-27 13:22:42,152 - INFO - [TRACK UPDATE] Tracking ID: 46 | Identity: Unknown
+2026-09-27 13:22:43,694 - INFO - [TRACK UPDATE] Tracking ID: 49 | Identity: Unknown
+2026-09-27 13:22:44,623 - INFO - [TRACK UPDATE] Tracking ID: 53 | Identity: Nivan Tyagi (0.80)
+2026-09-27 13:22:44,831 - INFO - [TRACK UPDATE] Tracking ID: 55 | Identity: Unknown
+2026-09-27 13:22:46,708 - INFO - [TRACK UPDATE] Tracking ID: 61 | Identity: Nivan Tyagi (0.65)
+2026-09-27 13:22:47,932 - INFO - [TRACK UPDATE] Tracking ID: 62 | Identity: Unknown
+2026-09-27 13:22:49,919 - INFO - [TRACK UPDATE] Tracking ID: 68 | Identity: Unknown
+2026-09-27 13:22:50,168 - INFO - [TRACK UPDATE] Tracking ID: 69 | Identity: Unknown
+2026-09-27 13:22:50,229 - INFO - [TRACK UPDATE] Tracking ID: 70 | Identity: Unknown
+2026-09-27 13:22:50,389 - INFO - [TRACK UPDATE] Tracking ID: 74 | Identity: Unknown
+2026-09-27 13:22:51,317 - INFO - [TRACK UPDATE] Tracking ID: 77 | Identity: Unknown
+2026-09-27 13:22:55,351 - INFO - [TRACK UPDATE] Tracking ID: 39 | Identity: Unknown
+2026-09-27 13:22:55,432 - INFO - [TRACK UPDATE] Tracking ID: 80 | Identity: Unknown
+2026-09-27 13:22:59,321 - INFO - [TRACK UPDATE] Tracking ID: 84 | Identity: Rakesh Ranjan (0.73)
+2026-09-27 13:23:07,334 - INFO - [TRACK UPDATE] Tracking ID: 90 | Identity: Unknown
+2026-09-27 13:23:14,932 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:23:18,035 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:23:18,035 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:23:18,035 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:23:18,061 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:23:19,183 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:23:22,049 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.79)
+2026-09-27 13:23:27,189 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:23:27,189 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:23:27,189 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:23:27,216 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:23:28,350 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:23:31,146 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.75)
+2026-09-27 13:23:31,327 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 13:23:36,243 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:23:36,906 - INFO - [TRACK UPDATE] Tracking ID: 7 | Identity: Unknown
+2026-09-27 13:23:37,310 - INFO - [TRACK UPDATE] Tracking ID: 10 | Identity: Unknown
+2026-09-27 13:25:10,785 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:25:10,785 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:25:10,785 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:25:10,813 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:25:11,939 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:25:14,604 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Unknown
+2026-09-27 13:25:14,780 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Nivan Tyagi (0.74)
+2026-09-27 13:25:22,076 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:25:22,351 - INFO - [TRACK UPDATE] Tracking ID: 6 | Identity: Unknown
+2026-09-27 13:25:26,170 - INFO - [TRACK UPDATE] Tracking ID: 10 | Identity: Unknown
+2026-09-27 13:25:31,551 - INFO - [TRACK UPDATE] Tracking ID: 15 | Identity: Unknown
+2026-09-27 13:25:34,581 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Unknown
+2026-09-27 13:25:34,846 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:25:39,856 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:25:39,856 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:25:39,857 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:25:39,883 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:25:40,985 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:25:43,825 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Sunny Singh (0.78)
+2026-09-27 13:25:43,878 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Unknown
+2026-09-27 13:25:44,054 - INFO - [TRACK UPDATE] Tracking ID: 3 | Identity: Unknown
+2026-09-27 13:25:47,587 - INFO - [TRACK UPDATE] Tracking ID: 6 | Identity: Unknown
+2026-09-27 13:25:48,628 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:26:58,392 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:26:58,392 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:26:58,392 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:26:58,420 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:26:59,520 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:27:02,291 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.78)
+2026-09-27 13:27:08,999 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:27:22,337 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.78)
+2026-09-27 13:27:28,870 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:27:56,699 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.78)
+2026-09-27 13:27:56,699 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Rakesh Ranjan (0.68)
+2026-09-27 13:27:59,340 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:34:00,667 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:34:00,667 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:34:00,667 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:34:00,694 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:34:01,831 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:34:04,674 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:34:08,973 - INFO - [TRACK UPDATE] Tracking ID: 2 | Identity: Rakesh Ranjan (0.72)
+2026-09-27 13:34:23,712 - INFO - [TRACK UPDATE] Tracking ID: 10 | Identity: Unknown
+2026-09-27 13:34:24,447 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:34:29,635 - INFO - [TRACK UPDATE] Tracking ID: 13 | Identity: Rakesh Ranjan (0.69)
+2026-09-27 13:34:33,780 - INFO - [TRACK UPDATE] Tracking ID: 21 | Identity: Rakesh Ranjan (0.63)
+2026-09-27 13:34:35,561 - INFO - [TRACK UPDATE] Tracking ID: 25 | Identity: Unknown
+2026-09-27 13:34:37,636 - INFO - [TRACK UPDATE] Tracking ID: 29 | Identity: Rakesh Ranjan (0.65)
+2026-09-27 13:34:39,538 - INFO - [TRACK UPDATE] Tracking ID: 31 | Identity: Rakesh Ranjan (0.71)
+2026-09-27 13:34:44,490 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.76)
+2026-09-27 13:34:46,088 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:35:38,587 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:35:38,587 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:35:38,587 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:35:38,614 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:35:39,727 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:35:42,540 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Nivan Tyagi (0.69)
+2026-09-27 13:35:49,394 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:37:37,024 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:37:37,024 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:37:37,024 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:37:37,052 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:37:38,139 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:37:40,926 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.74)
+2026-09-27 13:37:47,823 - INFO - [TRACK UPDATE] Tracking ID: 3 | Identity: Unknown
+2026-09-27 13:37:48,024 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:37:50,212 - INFO - [TRACK UPDATE] Tracking ID: 16 | Identity: Unknown
+2026-09-27 13:37:51,603 - INFO - [TRACK UPDATE] Tracking ID: 20 | Identity: Unknown
+2026-09-27 13:37:51,871 - INFO - [TRACK UPDATE] Tracking ID: 24 | Identity: Unknown
+2026-09-27 13:37:57,056 - INFO - [TRACK UPDATE] Tracking ID: 29 | Identity: Unknown
+2026-09-27 13:37:57,983 - INFO - [TRACK UPDATE] Tracking ID: 35 | Identity: Unknown
+2026-09-27 13:37:58,317 - INFO - [TRACK UPDATE] Tracking ID: 37 | Identity: Unknown
+2026-09-27 13:37:59,910 - INFO - [TRACK UPDATE] Tracking ID: 41 | Identity: Unknown
+2026-09-27 13:38:00,757 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.74)
+2026-09-27 13:38:02,690 - INFO - [TRACK UPDATE] Tracking ID: 44 | Identity: Unknown
+2026-09-27 13:38:06,996 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:40:03,714 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:40:03,714 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:40:03,714 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:40:03,740 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:40:04,904 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:40:07,714 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.75)
+2026-09-27 13:40:17,147 - INFO - [TRACK UPDATE] Tracking ID: 4 | Identity: Unknown
+2026-09-27 13:40:18,248 - INFO - [TRACK UPDATE] Tracking ID: 5 | Identity: Unknown
+2026-09-27 13:40:21,195 - INFO - [TRACK UPDATE] Tracking ID: 10 | Identity: Unknown
+2026-09-27 13:40:22,021 - INFO - [TRACK UPDATE] Tracking ID: 13 | Identity: Unknown
+2026-09-27 13:40:27,545 - INFO - [TRACK UPDATE] Tracking ID: 1 | Identity: Rakesh Ranjan (0.75)
+2026-09-27 13:40:31,725 - INFO - Video stream closed by user. Exiting pipeline.
+2026-09-27 13:49:20,317 - INFO - Initializing surveillance tracking system...
+2026-09-27 13:49:20,317 - INFO - Loading face database from ../database/face_db.pkl...
+2026-09-27 13:49:20,317 - INFO - Initializing YOLO26 model (yolo26n.pt)...
+2026-09-27 13:49:20,344 - INFO - Initializing InsightFace (buffalo_l)...
+2026-09-27 13:49:21,133 - INFO - Starting video stream. Logging updates every 20 seconds. Press 'q' to exit.
+2026-09-27 13:49:21,133 - INFO - Video stream closed by user. Exiting pipeline.

@@ -38,44 +38,20 @@ def load_face_db(pkl_path: str):
         return pickle.load(f)
 
 def match_face(embedding, face_db):
-    """
-    Compares an unknown face embedding against the enrolled database 
-    using proper cosine similarity, handling variations in vector norms.
-    """
+    """Compares an embedding against the database using cosine similarity."""
     best_name = "Unknown"
     best_score = -1.0
 
-    # 1. Safeguard against empty or invalid vector inputs
-    if embedding is None or np.linalg.norm(embedding) == 0:
-        return "Unknown"
-
-    # 2. Normalize the input embedding to a unit vector
-    norm_embedding = embedding / np.linalg.norm(embedding)
-
-    # 3. Iterate through enrolled users and their stored embeddings
     for name, ref_embeddings in face_db.items():
         for ref_emb in ref_embeddings:
-            # Safeguard for reference embeddings
-            if ref_emb is None or np.linalg.norm(ref_emb) == 0:
-                continue
-                
-            # Normalize the reference database embedding
-            norm_ref = ref_emb / np.linalg.norm(ref_emb)
-            
-            # Compute genuine cosine similarity (dot product of unit vectors)
-            score = float(np.dot(norm_embedding, norm_ref))
-            
-            # Keep track of the highest confidence match
+            score = np.dot(embedding, ref_emb)
             if score > best_score:
                 best_score = score
                 best_name = name
 
-    # 4. Apply the similarity threshold gate
     if best_score >= SIMILARITY_THRESHOLD:
         return f"{best_name} ({best_score:.2f})"
-        
     return "Unknown"
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -137,23 +113,14 @@ def main():
                 # If this person hasn't been recognized yet, extract their face
                 if track_id not in identity_cache:
                     h, w, _ = frame.shape
-                    
-                    # Add a 10% padding to the crop to give InsightFace more context around edges
-                    pad_x = int((x2 - x1) * 0.1)
-                    pad_y = int((y2 - y1) * 0.1)
-                    
-                    crop_x1 = max(0, x1 - pad_x)
-                    crop_y1 = max(0, y1 - pad_y)
-                    crop_x2 = min(w, x2 + pad_x)
-                    crop_y2 = min(h, y2 + pad_y)
-                    
+                    crop_x1, crop_y1 = max(0, x1), max(0, y1)
+                    crop_x2, crop_y2 = min(w, x2), min(h, y2)
                     person_crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
 
                     if person_crop.size > 0:
                         faces = face_app.get(person_crop)
                         if faces:
-                            # FIXED: Correct mathematical area calculation (Width * Height)
-                            face = max(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]))
+                            face = max(faces, key=lambda f: (f.bbox - f.bbox) * (f.bbox - f.bbox))
                             identity = match_face(face.normed_embedding, face_db)
                             identity_cache[track_id] = identity
                         else:
@@ -165,6 +132,7 @@ def main():
                 if track_id not in last_logged_time or (current_time - last_logged_time[track_id] >= args.interval):
                     log_msg = f"[TRACK UPDATE] Tracking ID: {int(track_id)} | Identity: {identity_cache[track_id]}"
                     logger.info(log_msg)
+                    # Update the baseline timestamp for this track
                     last_logged_time[track_id] = current_time
 
                 # Retrieve the cached identity for this persistent track ID
