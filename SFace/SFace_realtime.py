@@ -6,9 +6,9 @@ import numpy as np
 # ==========================================
 # 1. CONFIGURATION & MODEL INITIALIZATION
 # ==========================================
-DATASET_DIR = "database"
-DETECTOR_MODEL = "Datasets/face_detection_yunet_2023mar.onnx"
-RECOGNIZER_MODEL = "Datasets/face_recognition_sface_2021dec.onnx"
+DATASET_DIR = "../database"
+DETECTOR_MODEL = "../Datasets/face_detection_yunet_2023mar.onnx"
+RECOGNIZER_MODEL = "../Datasets/face_recognition_sface_2021dec.onnx"
 
 # Video matching threshold (slightly relaxed from 0.363 for real-world video noise)
 VIDEO_SFACE_THRESHOLD = 0.33
