@@ -1,5 +1,5 @@
 1. InsightFace have better performance in face extraction (InsightFace.ipynb)
-2.
+2. RetinaFace is excellent for the extraction stage. (RetinalFace.ipynb)
 
 # HEIC to jpg
 for f in *.HEIC *.heic; do
@@ -11,3 +11,27 @@ for f in *.HEIC *.heic; do
         echo "Converted and removed: $f"
     fi
 done
+
+
+
+
+
+
+
+
+
+
+Recommended SFace Pipeline
+Image
+   ↓
+RetinaFace
+   ↓
+Face Crop
+   ↓
+ArcFace (buffalo_l)
+   ↓
+512-D Embedding
+   ↓
+FAISS / PostgreSQL
+   ↓
+Person Search / Watchlist
