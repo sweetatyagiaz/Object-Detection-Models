@@ -1,0 +1,13 @@
+1. InsightFace have better performance in face extraction (InsightFace.ipynb)
+2.
+
+# HEIC to jpg
+for f in *.HEIC *.heic; do
+    [ -e "$f" ] || continue
+    output="${f%.*}.jpg"
+
+    if heif-convert "$f" "$output"; then
+        rm "$f"
+        echo "Converted and removed: $f"
+    fi
+done

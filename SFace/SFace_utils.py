@@ -113,7 +113,8 @@ def identify_face_from_memory(detector_model, recognizer_model, query_img_path, 
     return best_match_name
 
 
-def extract_all_faces(image_path, detector_model, recognizer_model, output_folder, score_threshold=0.5):
+def extract_all_faces(image_path=False, detector_model=False, recognizer_model=False, output_folder=False, 
+                      score_threshold=0.5, file_count=0):
     # 1. Initialize OpenCV Zoo models
     # detector = cv2.FaceDetectorYN.create("Datasets/face_detection_yunet_2023mar.onnx", "", (0, 0), score_threshold=0.5)
     # detector = cv2.FaceDetectorYN.create(detector_model_path, "", (0, 0), score_threshold=score_threshold)
@@ -159,17 +160,21 @@ def extract_all_faces(image_path, detector_model, recognizer_model, output_folde
         single_face_input = np.array([face])
         
         try:
+            file_count +=1 
             # SFace extracts a perfectly aligned and cropped 112x112 portrait 
             face_aligned = recognizer_model.alignCrop(img, single_face_input)
             
             # Save the cropped face profile to disk
-            output_filename = os.path.join(output_folder, f"face_{idx + 1}.jpg")
+            # output_filename = os.path.join(output_folder, f"face_{idx + 1}.jpg")
+            output_filename = os.path.join(output_folder, f"face_{file_count}.jpg")
             cv2.imwrite(output_filename, face_aligned)
             print(f" -> Saved: {output_filename}")
         except Exception as e:
             print(f" -> Failed to extract face index {idx + 1}: {e}")
 
     print(f"\nFinished! Check the '{output_folder}' directory for your images.")
+
+    return file_count
 
 def files_from_folder(dataset_path = False):    
     # The '**/*.jpg' means look through ALL subfolders for any .jpg file
