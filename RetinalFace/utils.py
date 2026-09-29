@@ -124,14 +124,15 @@ def compare_faces(face_emb1=False, face_emb2=False):
         face_emb2 / np.linalg.norm(face_emb2)
     )
 
-    print(f"Similarity: {similarity:.4f}")
+    # print(f"Similarity: {similarity:.4f}")
 
-    if similarity > 0.5:
-        print("Same Person")
-        return True
-    else:
-        print("Different Person")
-        return False
+    # if similarity > 0.5:
+    #     print("Same Person")
+    #     return similarity
+    # else:
+    #     print("Different Person")
+    #     return similarity
+    return similarity
 
 def create_faiss_index(DIMENSION = 512):
     # Create a FAISS Index
@@ -203,4 +204,86 @@ def faiss_load_save(option_save=False, faiss_index=False, file_path=False):
         faiss_index = faiss.read_index(file_path)
 
         return faiss_index
+
+def get_file_list(folder_path=False):
+    file_list = []
+
+    folder = folder_path
+
+    file_list = sorted(folder.glob("*.npy"))
+
+    # for file in file_list:
+    #     print(file.name)
+    return file_list
+
+def get_duplicate_embeddings(file_list=[]): 
+    duplicate_emb_list = []
+
+    for idx in range(len(file_list)):
+        # print(file_list[idx])
+
+        for idx1 in range(idx+1, len(file_list)):
+            # print(file_list[idx1])
+            temp = compare_faces(face_emb1=idx, face_emb2=idx1)
+            # print('\t->', temp, temp==temp, temp, ': ', file_list[idx1])
+
+            if temp==temp and int(temp) == 1 and not file_list[idx1] in duplicate_emb_list:
+                duplicate_emb_list.append(file_list[idx1])
+        # print()
+
+    return duplicate_emb_list
+
+def delete_files(files_to_delete=[]):
+    for file_path in files_to_delete:
+        if file_path.exists():
+            file_path.unlink()
+
+
+def get_folder_list(main_dir=False):
+    ROOT_DIR = Path(main_dir)
+
+    folder_list = sorted([
+        folder.name
+        for folder in ROOT_DIR.iterdir()
+        if folder.is_dir()
+    ])
+
+    # print(folder_list)
+
+    return folder_list
+
+def create_datasets_emb(embedding_datasets_dir=False, extracted_faces_datset=[], perosns_list=[]):
+    # Create Datasets Embeddings
+    
+    for person in perosns_list:
+        # print(embedding_datasets_dir+'/'+person)
+        person_dir = Path(embedding_datasets_dir) / person
+        print(person_dir)
+        folder_path = Path(person_dir)
+
+        # Create folder if it does not exist
+        folder_path.mkdir(exist_ok=True)
+
+        # Save embeddings
+        embedding = create_embeddings(save_emb=True, faces_dir=Path(extracted_faces_datset) / person, 
+                                    embeddings_dir=Path(embedding_datasets_dir) / person)
+
+        print('.done')
+
+def remove_duplicate_emb_datasets(embedding_datasets_dir=False, perosns_list=[]):
+    for person in perosns_list:
+        print(Path(embedding_datasets_dir) / person)
+
+        # Get embedding file list of a particular person
+        file_list = get_file_list(Path(embedding_datasets_dir) / person)
+        # print(file_list)
+
+        # Get duplicate embedding faces of person
+        duplicate_emb_list = get_duplicate_embeddings(file_list=file_list)
+        # print(duplicate_emb_list)
+
+        # Delete duplicate embedaings
+        delete_files(files_to_delete=duplicate_emb_list)
+        
+    return True
 
