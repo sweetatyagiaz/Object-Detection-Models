@@ -35,3 +35,15 @@ ArcFace (buffalo_l)
 FAISS / PostgreSQL
    ↓
 Person Search / Watchlist
+
+
+
+# TODO: Add support for incremental FAISS updates
+# TODO: Store metadata in SQLite
+# FIXME: Handle corrupted image files
+# NOTE: Some folders may contain no images
+# TODO:
+# FIXME:
+# NOTE:
+# BUG:
+# HACK:

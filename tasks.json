@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate Embeddings",
+            "type": "shell",
+            "command": "python generate_embeddings.py"
+        },
+        {
+            "label": "Build FAISS Index",
+            "type": "shell",
+            "command": "python build_faiss.py"
+        }
+    ]
+}
