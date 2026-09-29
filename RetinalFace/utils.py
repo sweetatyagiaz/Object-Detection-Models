@@ -3,7 +3,6 @@ from pathlib import Path
 from retinaface import RetinaFace
 import cv2
 import os
-from pathlib import Path
 import numpy as np
 from insightface.app import FaceAnalysis
 import faiss

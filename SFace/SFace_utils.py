@@ -2,6 +2,7 @@ import os
 import glob
 import cv2
 import numpy as np
+from pathlib import Path
 
 def initialize_model(detector_model_path, recognizer_model_path, input_size=(0, 0), score_threshold=0.45, nms_threshold=0.3):
     # 1. Initialize OpenCV YuNet Detector and SFace Recognizer
@@ -114,7 +115,7 @@ def identify_face_from_memory(detector_model, recognizer_model, query_img_path, 
 
 
 def extract_all_faces(image_path=False, detector_model=False, recognizer_model=False, output_folder=False, 
-                      score_threshold=0.5, file_count=0):
+                      score_threshold=0.5, file_count=0, file_name=False):
     # 1. Initialize OpenCV Zoo models
     # detector = cv2.FaceDetectorYN.create("Datasets/face_detection_yunet_2023mar.onnx", "", (0, 0), score_threshold=0.5)
     # detector = cv2.FaceDetectorYN.create(detector_model_path, "", (0, 0), score_threshold=score_threshold)
@@ -166,7 +167,11 @@ def extract_all_faces(image_path=False, detector_model=False, recognizer_model=F
             
             # Save the cropped face profile to disk
             # output_filename = os.path.join(output_folder, f"face_{idx + 1}.jpg")
-            output_filename = os.path.join(output_folder, f"face_{file_count}.jpg")
+            if file_name:
+                output_filename = os.path.join(output_folder, f"{file_name}.jpg")
+            else:
+                output_filename = os.path.join(output_folder, f"face_{file_count}.jpg")
+
             cv2.imwrite(output_filename, face_aligned)
             print(f" -> Saved: {output_filename}")
         except Exception as e:
@@ -193,3 +198,50 @@ def ideentify_faces(detector_model, recognizer_model, face_database_dict, images
         identify_face_from_memory(detector_model=detector_model, recognizer_model=recognizer_model, 
                             query_img_path=idx, templates=face_database_dict)
 
+
+def get_folder_list(main_dir=False):
+    ROOT_DIR = Path(main_dir)
+
+    folder_list = sorted([
+        folder.name
+        for folder in ROOT_DIR.iterdir()
+        if folder.is_dir()
+    ])
+
+    # print(folder_list)
+
+    return folder_list
+
+def prepare_sface_dataset(score_threshold=0.3, raw_dataset_dir=False, recognizer_model=False, detector_model=False, 
+                          output_folder=False, dataset_dir=False):
+
+    # Prepare SFace datset
+
+    # get persons list
+    perosns_list = get_folder_list(main_dir=raw_dataset_dir)
+
+    # Extract all facses for SFace dataset
+    for person in perosns_list:
+            
+            # get images file list of a person in raw data 
+            print(Path(raw_dataset_dir) / person)
+            person_images = files_from_folder(dataset_path=Path(raw_dataset_dir) / person)
+            # print(person_images)
+
+            # Person folder path
+            person_dir = Path(dataset_dir) / person
+            # print(person_dir)
+            folder_path = Path(person_dir)
+
+            # Create folder if it does not exist
+            folder_path.mkdir(exist_ok=True)
+
+            for img in person_images:
+                    print(img)
+                    file_name = img.split('/')[-1].replace('.jpg','')
+
+                    # Extract face from image
+                    extract_all_faces(image_path=img, recognizer_model=recognizer_model, detector_model=detector_model, 
+                                    output_folder=person_dir, score_threshold=0.3, file_name=file_name)
+
+    return True
