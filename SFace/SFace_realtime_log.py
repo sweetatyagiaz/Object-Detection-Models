@@ -9,9 +9,10 @@ import uuid
 # ==========================================
 # 1. CONFIGURATION & MODEL INITIALIZATION
 # ==========================================
-DATASET_DIR = "../database"
-DETECTOR_MODEL = "../Datasets/face_detection_yunet_2023mar.onnx"
-RECOGNIZER_MODEL = "../Datasets/face_recognition_sface_2021dec.onnx"
+DATASET_DIR = "../database" # Working old dataset without face crop
+DATASET_DIR = "../datasets/extracted_faces_datasets"
+DETECTOR_MODEL = "../models/face_detection_yunet_2023mar.onnx"
+RECOGNIZER_MODEL = "../models/face_recognition_sface_2021dec.onnx"
 
 # Video matching threshold (slightly relaxed from 0.363 for real-world video noise)
 VIDEO_SFACE_THRESHOLD = 0.33
