@@ -303,15 +303,7 @@ Avoid:
 
 ## Performance Considerations
 
-For Surveillance Systems:
-
-```text
-SCRFD
-   +
-AdaFace
-   +
-FAISS HNSW
-```
+<p align="center"><img src="AdaFace-Performance Considerations For Surveillance Systems.png"></p>
 
 provides an excellent balance between:
 
