@@ -237,8 +237,7 @@ index = faiss.read_index("face_index.faiss")
 
 ---
 
-## Production Stack - Face Recognition
-
+## Face Recognition
 
 <p align="center"><img src="ArcFace - Production Stack.png"></p>
 
@@ -352,33 +351,7 @@ Depends on hardware and FAISS index type.
 
 ## Recommended Production Pipeline
 
-```text
-Raw Dataset
-      │
-      ▼
-SCRFD
-      │
-      ▼
-Alignment
-      │
-      ▼
-Quality Filtering
-      │
-      ▼
-Duplicate Removal
-      │
-      ▼
-ArcFace Embeddings
-      │
-      ▼
-FAISS Index
-      │
-      ▼
-Real-Time Recognition
-      │
-      ▼
-Alert / Investigation System
-```
+<p align="center"><img src="ArcFace - Production Pipeline.png"></p>
 
 ---
 
@@ -394,12 +367,6 @@ Alert / Investigation System
 - Django Web Interface
 - Watchlist Alert System
 - Distributed FAISS Cluster
-
----
-
-## License
-
-MIT License
 
 ---
 
