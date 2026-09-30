@@ -352,7 +352,7 @@ Solutions:
 ```bash
 git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
 
-cd arcface-recognition
+cd Object-Detection-Models
 ```
 
 ---

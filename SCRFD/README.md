@@ -65,6 +65,7 @@ SCRFD/
 
 ```bash
 git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
+
 cd Object-Detection-Models/SCRFD
 ```
 
