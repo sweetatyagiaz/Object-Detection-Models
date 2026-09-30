@@ -131,7 +131,7 @@ Example:
 ### Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/arcface-recognition.git
+git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
 
 cd arcface-recognition
 ```
