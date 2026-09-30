@@ -64,8 +64,8 @@ SCRFD/
 ### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/SCRFD.git
-cd SCRFD
+git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
+cd Object-Detection-Models/SCRFD
 ```
 
 ### Create Virtual Environment
