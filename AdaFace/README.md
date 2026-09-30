@@ -345,5 +345,3 @@ Focused on:
 - Real-Time Face Identification
 - Multi-Camera Monitoring Systems
 ```
-
-You can save this directly as `README.md` in your `AdaFace` GitHub repository.
