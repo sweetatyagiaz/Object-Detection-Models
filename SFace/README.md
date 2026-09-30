@@ -43,27 +43,7 @@ The model performs face alignment before feature extraction and then generates a
 
 ### Pipeline
 
-```text
-Image
-  │
-  ▼
-YuNet Face Detection
-  │
-  ▼
-5-Point Landmark Detection
-  │
-  ▼
-Face Alignment
-  │
-  ▼
-SFace Embedding
-  │
-  ▼
-Cosine Similarity / FAISS Search
-  │
-  ▼
-Identity Match
-```
+<p align="center"><img src="SFace - Architecture Pipeline.png"></p>
 
 ---
 
