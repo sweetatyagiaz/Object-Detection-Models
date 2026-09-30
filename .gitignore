@@ -7,3 +7,4 @@ models/
 __pycache__/
 models/adaface_ir50.onnx
 
+models/adaface_ir50.onnx
