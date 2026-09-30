@@ -3,4 +3,4 @@ database/
 raw_data/
 datasets/
 
-__pycache__
+__pycache__/
