@@ -41,8 +41,6 @@ The model performs face alignment before feature extraction and then generates a
 
 ## Architecture
 
-### Pipeline
-
 <p align="center"><img src="SFace - Architecture Pipeline.png"></p>
 
 ---

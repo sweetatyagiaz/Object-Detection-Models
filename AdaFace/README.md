@@ -20,7 +20,7 @@ Object detection is widely used in:
 
 # Object Detection Pipeline
 
-<p align="center"><img src="Object Detection Pipeline.png"></p>
+<p align="center"><img src="AdaFace: Architecture Pipeline.png"></p>
 
 ---
 
