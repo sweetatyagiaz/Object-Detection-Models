@@ -1,377 +1,380 @@
-# Object-Detection-Models
+# AdaFace Face Recognition
 
-## Overview
-
-Object Detection is a computer vision task that identifies and localizes objects within images or video streams. Unlike image classification, object detection predicts both the object category and its location using bounding boxes.
-
-Object detection is widely used in:
-
-* Security and Surveillance
-* Autonomous Vehicles
-* Traffic Monitoring
-* Smart Cities
-* Retail Analytics
-* Industrial Inspection
-* Medical Imaging
-* Robotics
-* Drone Surveillance
+AdaFace is a state-of-the-art face recognition model designed to improve recognition performance on real-world images with varying quality levels. Unlike traditional face recognition models that use a fixed margin during training, AdaFace adapts the margin according to image quality, making it highly effective for surveillance, CCTV, mobile, and unconstrained face recognition applications.
 
 ---
 
-# Object Detection Pipeline
+## Features
+
+- Quality-Adaptive Face Recognition
+- Robust to Blur and Motion Artifacts
+- Effective on Low-Resolution Faces
+- Better Performance on CCTV Images
+- 512-Dimensional Face Embeddings
+- FAISS Integration for Large-Scale Search
+- Supports Real-Time Recognition Pipelines
+- Compatible with SCRFD, RetinaFace, and YuNet Detectors
+
+---
+
+## Architecture
 
 <p align="center"><img src="AdaFace-Architecture Pipeline.png"></p>
 
 ---
 
-# Types of Object Detection Models
+## Why AdaFace?
 
-## 1. Two-Stage Detectors
+Traditional face recognition models assume that all images have similar quality.
 
-Two-stage detectors first generate region proposals and then classify each proposal.
+Real-world deployments often involve:
 
-### Models
+- Low-resolution CCTV footage
+- Motion blur
+- Poor illumination
+- Occlusions
+- Partial faces
+- Non-frontal views
 
-* R-CNN
-* Fast R-CNN
-* Faster R-CNN
-* Mask R-CNN
-
-### Advantages
-
-* High Accuracy
-* Better Small Object Detection
-
-### Disadvantages
-
-* Slower Inference
-* Higher Computational Cost
-
-### Best For
-
-* Medical Imaging
-* Research Applications
-* Offline Analytics
+AdaFace dynamically adjusts its training margin according to image quality, improving recognition accuracy in these challenging scenarios.
 
 ---
 
-## 2. One-Stage Detectors
+## Comparison
 
-One-stage detectors directly predict bounding boxes and classes.
-
-### Models
-
-* YOLO Series
-* SSD
-* RetinaNet
-* EfficientDet
-
-### Advantages
-
-* Real-Time Performance
-* Lower Latency
-* Suitable for Edge Devices
-
-### Disadvantages
-
-* Slightly Lower Accuracy Compared to Two-Stage Models
-
-### Best For
-
-* CCTV Surveillance
-* Autonomous Vehicles
-* Live Video Analytics
+| Feature | ArcFace | AdaFace |
+|----------|----------|----------|
+| High Quality Images | Excellent | Excellent |
+| Low Resolution Images | Good | Excellent |
+| Motion Blur | Good | Excellent |
+| CCTV Footage | Good | Excellent |
+| Surveillance Systems | Good | Excellent |
+| Real-world Robustness | Good | Excellent |
 
 ---
 
-## State-of-the-Art Models
-
-### YOLO Family
-
-| Model   | Speed            | Accuracy  | Real-Time |
-| ------- | ---------------- | --------- | --------- |
-| YOLOv5  | High             | High      | Yes       |
-| YOLOv8  | Very High        | Very High | Yes       |
-| YOLOv10 | Extremely High   | Very High | Yes       |
-| YOLOv11 | Extremely High   | Excellent | Yes       |
-| YOLOv12 | State-of-the-Art | Excellent | Yes       |
-
-#### Features
-
-* Real-Time Detection
-* Multi-Class Detection
-* Edge Deployment
-* Video Analytics
-
-#### Use Cases
-
-* Surveillance Systems
-* Smart Cities
-* Traffic Monitoring
-* Retail Analytics
-
----
-
-### RT-DETR
-
-Real-Time Detection Transformer.
-
-#### Features
-
-* Transformer-based Architecture
-* End-to-End Detection
-* No NMS Required
-* High Accuracy
-
-#### Advantages
-
-* Better Small Object Detection
-* Strong Performance on COCO Dataset
-
-#### Use Cases
-
-* Enterprise Vision Systems
-* Industrial Inspection
-
----
-
-### RF-DETR
-
-Region-Free Detection Transformer.
-
-#### Features
-
-* Advanced Transformer Architecture
-* High Precision Detection
-* State-of-the-Art Accuracy
-
-#### Advantages
-
-* Excellent Object Localization
-* Strong Generalization
-
-#### Use Cases
-
-* High-End Surveillance
-* Autonomous Systems
-
----
-
-### Grounding DINO
-
-Open-Vocabulary Object Detection Model.
-
-#### Features
-
-* Text-Guided Detection
-* Zero-Shot Learning
-* Open Vocabulary
-
-#### Example Queries
+## Recommended Production Pipeline
 
 ```text
-person with red backpack
-worker wearing helmet
-abandoned suitcase
-weapon
-truck
+Video Stream
+      │
+      ▼
+SCRFD Face Detection
+      │
+      ▼
+Face Alignment
+      │
+      ▼
+AdaFace Embedding Extraction
+      │
+      ▼
+FAISS Vector Search
+      │
+      ▼
+Person Identification
 ```
-
-#### Use Cases
-
-* Security Monitoring
-* Smart Surveillance
-* Threat Detection
+<p align="center"><img src="AdaFace-Production Stack.png"></p>
 
 ---
 
-### YOLO-World
-
-Open-Vocabulary Real-Time Detection.
-
-#### Features
-
-* Real-Time Performance
-* Text-Based Queries
-* Lightweight Deployment
-
-#### Use Cases
-
-* Edge AI Systems
-* Intelligent Surveillance
-
----
-
-# Model Comparison
-
-| Model          | Accuracy    | Speed     | Open Vocabulary | Real-Time |
-| -------------- | ----------- | --------- | --------------- | --------- |
-| Faster R-CNN   | Excellent   | Medium    | No              | No        |
-| Mask R-CNN     | Excellent   | Medium    | No              | No        |
-| YOLOv12        | Excellent   | Excellent | No              | Yes       |
-| RT-DETR        | Excellent   | High      | No              | Yes       |
-| RF-DETR        | Outstanding | High      | No              | Yes       |
-| Grounding DINO | Outstanding | Medium    | Yes             | Limited   |
-| YOLO-World     | Excellent   | High      | Yes             | Yes       |
-
----
-
-# Evaluation Metrics
-
-## mAP (Mean Average Precision)
-
-Most common object detection metric.
+## Project Structure
 
 ```text
-Higher is Better
+AdaFace/
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── database/
+│
+├── models/
+│   ├── adaface_ir50.onnx
+│   └── adaface_ir100.onnx
+│
+├── src/
+│   ├── detectors/
+│   ├── aligners/
+│   ├── embeddings/
+│   ├── faiss/
+│   └── utils/
+│
+├── examples/
+│   ├── extract_embedding.py
+│   ├── create_index.py
+│   └── search_face.py
+│
+├── reports/
+│
+├── requirements.txt
+│
+└── README.md
 ```
-
-Measures:
-
-* Localization Accuracy
-* Classification Accuracy
 
 ---
 
-## Precision
+## Dataset Structure
+
+Recommended format:
 
 ```text
-Precision = TP / (TP + FP)
+database/
+│
+├── 1.Rakesh_Ranjan/
+│   ├── img1.jpg
+│   ├── img2.jpg
+│   └── img3.jpg
+│
+├── 2.Sunny_Singh/
+│   ├── img1.jpg
+│   ├── img2.jpg
+│   └── img3.jpg
+│
+└── 3.Ajay_Kumar/
+    ├── img1.jpg
+    ├── img2.jpg
+    └── img3.jpg
 ```
 
-Measures how many detected objects are correct.
-
----
-
-## Recall
+Folder naming convention:
 
 ```text
-Recall = TP / (TP + FN)
+<ID>.<FirstName>_<LastName>
 ```
 
-Measures how many actual objects were detected.
-
----
-
-## IoU (Intersection over Union)
+Example:
 
 ```text
-IoU = Area of Overlap / Area of Union
+1.Rakesh_Ranjan
 ```
 
-Measures overlap between predicted and ground-truth bounding boxes.
-
 ---
 
-# Object Detection Challenges
+## Installation
 
-## Small Object Detection
-
-Examples:
-
-* Drones
-* Faces
-* License Plates
-
-Solutions:
-
-* Feature Pyramid Networks (FPN)
-* Transformer Architectures
-
----
-
-## Occlusion
-
-Examples:
-
-* Crowded Scenes
-* Traffic Intersections
-
-Solutions:
-
-* Multi-Scale Features
-* Attention Mechanisms
-
----
-
-## Low-Light Detection
-
-Examples:
-
-* Night Surveillance
-* Infrared Cameras
-
-Solutions:
-
-* Image Enhancement
-* Thermal Sensors
-
----
-
-## Real-Time Constraints
-
-Requirements:
-
-* Low Latency
-* High FPS
-* Efficient GPU Usage
-
-Solutions:
-
-* YOLO Series
-* TensorRT Optimization
-* Triton Inference Server
-
----
-
-# Recommended Models by Use Case
-
-| Use Case                  | Recommended Model   |
-| ------------------------- | ------------------- |
-| CCTV Surveillance         | YOLOv12             |
-| Smart City Monitoring     | YOLOv12 + ByteTrack |
-| Face Detection            | SCRFD               |
-| Face Recognition          | ArcFace             |
-| Traffic Monitoring        | YOLOv12             |
-| Industrial Inspection     | RT-DETR             |
-| Autonomous Vehicles       | RF-DETR             |
-| Open-Vocabulary Detection | Grounding DINO      |
-| Edge Devices              | YOLOv12 Nano        |
-| Drone Analytics           | YOLOv12             |
-
----
-
-# Enterprise Surveillance Architecture
-
-<p align="center"><img src="Enterprise Surveillance Architecture.png"></p>
-
----
-
-# Clone Repository
+Clone repository:
 
 ```bash
-git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
+git clone https://github.com/your-org/AdaFace.git
+cd AdaFace
+```
 
-cd Object-Detection-Models
+Create virtual environment:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
+## Generate Face Embeddings
 
-# Future Trends
+```bash
+python examples/extract_embedding.py \
+    --image data/sample.jpg
+```
 
-* Vision Transformers
-* Foundation Vision Models
-* Open Vocabulary Detection
-* Multi-Modal AI Systems
-* Edge AI Acceleration
-* Agentic Video Analytics
-* Self-Supervised Learning
-* Real-Time Large Vision Models (LVMs)
+Output:
+
+```text
+Embedding Shape: (512,)
+```
 
 ---
 
-# Conclusion
+## Create FAISS Index
 
-Object Detection is a foundational technology in modern computer vision systems. While YOLOv12 provides the best balance of speed and accuracy for real-time applications, RF-DETR and RT-DETR offer superior transformer-based alternatives. For open-vocabulary detection, Grounding DINO and YOLO-World represent the next generation of intelligent object detection systems capable of detecting unseen objects using natural language descriptions.
+```bash
+python examples/create_index.py \
+    --database database/
+```
 
+Output:
+
+```text
+Total Persons : 1000
+Total Images  : 500000
+Index Created Successfully
+```
+
+---
+
+## Search Face
+
+```bash
+python examples/search_face.py \
+    --image query.jpg
+```
+
+Example Output:
+
+```text
+Score : 0.92
+ID    : 1
+Name  : Rakesh Ranjan
+```
+
+---
+
+## Recommended Thresholds
+
+### Cosine Similarity
+
+| Similarity | Interpretation |
+|------------|----------------|
+| > 0.80 | Same Person |
+| 0.70 - 0.80 | Possible Match |
+| 0.60 - 0.70 | Weak Match |
+| < 0.60 | Different Person |
+
+Thresholds should be calibrated using your dataset.
+
+---
+
+## FAISS Configuration
+
+### Exact Search
+
+```python
+index = faiss.IndexFlatIP(512)
+```
+
+Advantages:
+
+- Highest accuracy
+- No approximation
+
+Disadvantages:
+
+- Slower on very large datasets
+
+---
+
+### HNSW Search
+
+```python
+index = faiss.IndexHNSWFlat(
+    512,
+    32
+)
+```
+
+Advantages:
+
+- Fast search
+- Large-scale deployment
+- Suitable for millions of embeddings
+
+Disadvantages:
+
+- Approximate nearest neighbors
+
+---
+
+## Best Practices
+
+### Face Size
+
+Recommended minimum:
+
+```text
+112 × 112 pixels
+```
+
+Ideal:
+
+```text
+160 × 160 pixels or larger
+```
+
+---
+
+### Face Pose
+
+Recommended:
+
+```text
+Yaw < ±30°
+Pitch < ±20°
+Roll < ±20°
+```
+
+---
+
+### Image Quality
+
+Avoid:
+
+- Heavy blur
+- Extreme shadows
+- Overexposure
+- Severe occlusion
+
+---
+
+## Performance Considerations
+
+For Surveillance Systems:
+
+```text
+SCRFD
+   +
+AdaFace
+   +
+FAISS HNSW
+```
+
+provides an excellent balance between:
+
+- Accuracy
+- Speed
+- Scalability
+
+and can support large multi-camera deployments.
+
+---
+
+## References
+
+### Paper
+
+AdaFace: Quality Adaptive Margin for Face Recognition
+
+```text
+https://arxiv.org/abs/2204.00964
+```
+
+### Official Repository
+
+```text
+https://github.com/mk-minchul/AdaFace
+```
+
+---
+
+## License
+
+Refer to the original AdaFace repository for licensing information.
+
+---
+
+## Author
+
+Face Recognition Research & Deployment Notes
+
+Focused on:
+
+- Surveillance Analytics
+- CCTV Recognition
+- Large Scale FAISS Search
+- Real-Time Face Identification
+- Multi-Camera Monitoring Systems
+```
+
+You can save this directly as `README.md` in your `AdaFace` GitHub repository.
