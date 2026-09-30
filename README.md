@@ -20,30 +20,7 @@ Object detection is widely used in:
 
 # Object Detection Pipeline
 
-```text
-Input Image / Video
-        │
-        ▼
-Preprocessing
-        │
-        ▼
-Feature Extraction Backbone
-        │
-        ▼
-Neck (Feature Fusion)
-        │
-        ▼
-Detection Head
-        │
-        ▼
-Bounding Boxes + Class Labels
-        │
-        ▼
-Post Processing (NMS)
-        │
-        ▼
-Final Detection Results
-```
+<p align="center"><img src="Object Detection Pipeline.png"></p>
 
 ---
 
@@ -365,37 +342,6 @@ Solutions:
 ---
 
 # Enterprise Surveillance Architecture
-
-```text
-Cameras
-   │
-   ▼
-Video Streaming (RTSP)
-   │
-   ▼
-Object Detection (YOLOv12)
-   │
-   ▼
-Tracking (ByteTrack)
-   │
-   ▼
-Face Detection (SCRFD)
-   │
-   ▼
-Face Recognition (ArcFace)
-   │
-   ▼
-Person ReID (FastReID)
-   │
-   ▼
-Event Detection
-   │
-   ▼
-Alert Engine
-   │
-   ▼
-Dashboard & Analytics
-```
 
 <p align="center"><img src="Enterprise Surveillance Architecture.png"></p>
 
