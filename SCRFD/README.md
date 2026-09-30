@@ -21,27 +21,6 @@ SCRFD is a state-of-the-art face detector optimized for real-time applications, 
 
 ## Pipeline
 
-```text
-Input Image
-     │
-     ▼
-SCRFD Detector
-     │
-     ├── Bounding Box
-     │
-     └── 5 Facial Landmarks
-             │
-             ▼
-Face Alignment
-             │
-             ▼
-112x112 Face Crop
-             │
-             ▼
-Face Recognition Model
-(ArcFace / SFace / AdaFace)
-```
-
 <p align="center"><img src="SCRFD - Pipeline.png"></p>
 
 ---
@@ -210,18 +189,7 @@ These landmarks are used for face alignment before feature extraction.
 
 ## Face Alignment
 
-```text
-Detected Face
-      │
-      ▼
-5 Facial Landmarks
-      │
-      ▼
-Similarity Transform
-      │
-      ▼
-112 × 112 Face Crop
-```
+<p align="center"><img src="SCRFD - Face Alignment.png"></p>
 
 ---
 
