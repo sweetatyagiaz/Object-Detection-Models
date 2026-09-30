@@ -399,6 +399,17 @@ Dashboard & Analytics
 
 ---
 
+# Clone Repository
+
+```bash
+git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
+
+cd arcface-recognition
+```
+
+---
+
+
 # Future Trends
 
 * Vision Transformers
