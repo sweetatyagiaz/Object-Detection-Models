@@ -187,7 +187,6 @@ These landmarks are used for face alignment before feature extraction.
 
 ---
 
-## Face Alignment
 
 <p align="center"><img src="SCRFD - Face Alignment.png"></p>
 
