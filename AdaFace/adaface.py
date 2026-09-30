@@ -108,18 +108,15 @@ class AdaFace:
             np.float32
         )
 
-    def build_index(
-        self
-    ):
+    def build_index(self):
+
         embeddings = []
         mapping = {}
 
         faiss_id = 0
 
         for person_dir in sorted(
-            os.listdir(
-                self.database_dir
-            )
+            os.listdir(self.database_dir)
         ):
 
             person_path = os.path.join(
@@ -127,9 +124,7 @@ class AdaFace:
                 person_dir
             )
 
-            if not os.path.isdir(
-                person_path
-            ):
+            if not os.path.isdir(person_path):
                 continue
 
             try:
@@ -193,7 +188,7 @@ class AdaFace:
                         person_id,
 
                         "name":
-                        person_name,
+                        person_name.strip(),
 
                         "image":
                         image_path
@@ -206,9 +201,22 @@ class AdaFace:
             dtype=np.float32
         )
 
+        print(
+            f"Embeddings Shape: "
+            f"{embeddings.shape}"
+        )
+
+        #
+        # IMPORTANT
+        #
+        faiss.normalize_L2(
+            embeddings
+        )
+
         self.index = faiss.IndexHNSWFlat(
             self.DIMENSION,
-            32
+            32,
+            faiss.METRIC_INNER_PRODUCT
         )
 
         self.index.hnsw.efConstruction = 200
@@ -225,6 +233,10 @@ class AdaFace:
         print(
             f"Total Embeddings: "
             f"{len(embeddings)}"
+        )
+
+        print(
+            "FAISS Index Saved"
         )
 
     def save_index(
@@ -276,9 +288,10 @@ class AdaFace:
     def search_face(
         self,
         image_path,
-        top_k=20,
-        threshold=0.60
+        top_k=5,
+        threshold=0.65
     ):
+
         if self.index is None:
             self.load_index()
 
@@ -288,7 +301,7 @@ class AdaFace:
 
         if image is None:
             raise Exception(
-                f"Cannot load: "
+                f"Cannot load image: "
                 f"{image_path}"
             )
 
@@ -299,13 +312,19 @@ class AdaFace:
         )
 
         query_embedding = (
-            query_embedding.reshape(
-                1,
-                -1
-            )
+            query_embedding
+            .reshape(1, -1)
+            .astype(np.float32)
         )
 
-        distances, indices = (
+        #
+        # IMPORTANT
+        #
+        faiss.normalize_L2(
+            query_embedding
+        )
+
+        similarities, indices = (
             self.index.search(
                 query_embedding,
                 top_k
@@ -317,12 +336,14 @@ class AdaFace:
         )
 
         for score, idx in zip(
-            distances[0],
+            similarities[0],
             indices[0]
         ):
 
             if idx < 0:
                 continue
+
+            score = float(score)
 
             if score < threshold:
                 continue
@@ -338,14 +359,9 @@ class AdaFace:
                 person["person_id"]
             ].append(
                 {
-                    "score":
-                    float(score),
-
-                    "name":
-                    person["name"],
-
-                    "image":
-                    person["image"]
+                    "score": score,
+                    "name": person["name"],
+                    "image": person["image"]
                 }
             )
 
@@ -364,7 +380,8 @@ class AdaFace:
                 sum(
                     x["score"]
                     for x in matches
-                ) /
+                )
+                /
                 len(matches)
             )
 
