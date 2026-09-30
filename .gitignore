@@ -2,3 +2,5 @@ Datasets/
 database/
 raw_data/
 datasets/
+
+__pycache__
