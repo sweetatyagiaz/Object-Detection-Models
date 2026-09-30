@@ -207,29 +207,7 @@ These landmarks are used for face alignment before feature extraction.
 
 ---
 
-## Recommended Recognition Pipeline
-
-```text
-Image / Video
-      │
-      ▼
-SCRFD
-      │
-      ▼
-Face Alignment
-      │
-      ▼
-ArcFace / SFace
-      │
-      ▼
-512-D Embedding
-      │
-      ▼
-FAISS Search
-      │
-      ▼
-Identity Matching
-```
+<p align="center"><img src="SCRFD Recognition Pipline.png"></p>
 
 ---
 
