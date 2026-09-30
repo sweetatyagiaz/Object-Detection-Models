@@ -397,6 +397,8 @@ Alert Engine
 Dashboard & Analytics
 ```
 
+<p align="center"><img src="Enterprise Surveillance Architecture.png"></p>
+
 ---
 
 # Clone Repository
