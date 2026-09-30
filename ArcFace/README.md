@@ -237,31 +237,8 @@ index = faiss.read_index("face_index.faiss")
 
 ---
 
-## Face Recognition
+## Production Stack - Face Recognition
 
-Query image:
-
-```text
-Unknown Face
-        │
-        ▼
-SCRFD
-        │
-        ▼
-Alignment
-        │
-        ▼
-ArcFace
-        │
-        ▼
-512-D Embedding
-        │
-        ▼
-FAISS Search
-        │
-        ▼
-Top-K Matches
-```
 
 <p align="center"><img src="ArcFace - Production Stack.png"></p>
 
