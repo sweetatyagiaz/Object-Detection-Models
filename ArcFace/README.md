@@ -23,34 +23,6 @@ The system is designed to work with thousands of identities and millions of face
 
 ## Architecture
 
-```text
-Raw Images
-    │
-    ▼
-SCRFD Face Detection
-    │
-    ▼
-Face Alignment
-    │
-    ▼
-Quality Filtering
-    │
-    ▼
-Duplicate Removal
-    │
-    ▼
-ArcFace Embedding Generation
-    │
-    ▼
-512-D Feature Vectors
-    │
-    ▼
-FAISS Index
-    │
-    ▼
-Face Recognition
-```
-
 <p align="center"><img src="ArcFace-pipline.png"></p>
 
 ---
@@ -290,6 +262,8 @@ FAISS Search
         ▼
 Top-K Matches
 ```
+
+<p align="center"><img src="ArcFace - Production Stack.png"></p>
 
 ---
 
