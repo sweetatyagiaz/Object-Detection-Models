@@ -42,6 +42,8 @@ Face Recognition Model
 (ArcFace / SFace / AdaFace)
 ```
 
+<p align="center"><img src="SCRFD - Pipeline.png"></p>
+
 ---
 
 ## Repository Structure
