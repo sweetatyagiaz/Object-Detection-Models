@@ -55,24 +55,6 @@ AdaFace dynamically adjusts its training margin according to image quality, impr
 
 ## Recommended Production Pipeline
 
-```text
-Video Stream
-      │
-      ▼
-SCRFD Face Detection
-      │
-      ▼
-Face Alignment
-      │
-      ▼
-AdaFace Embedding Extraction
-      │
-      ▼
-FAISS Vector Search
-      │
-      ▼
-Person Identification
-```
 <p align="center"><img src="AdaFace-Production Stack.png"></p>
 
 ---
@@ -154,8 +136,9 @@ Example:
 Clone repository:
 
 ```bash
-git clone https://github.com/your-org/AdaFace.git
-cd AdaFace
+git clone https://github.com/sweetatyagiaz/Object-Detection-Models.git
+
+cd Object-Detection-Models/AdaFace
 ```
 
 Create virtual environment:
@@ -355,12 +338,6 @@ https://arxiv.org/abs/2204.00964
 ```text
 https://github.com/mk-minchul/AdaFace
 ```
-
----
-
-## License
-
-Refer to the original AdaFace repository for licensing information.
 
 ---
 
