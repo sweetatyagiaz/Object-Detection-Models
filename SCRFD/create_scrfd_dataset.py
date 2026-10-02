@@ -62,7 +62,7 @@ from insightface.utils import face_align
 
 DATABASE_PATH = "../datasets/raw_data"
 
-OUTPUT_DATABASE_NAME = "database_scrfd"
+OUTPUT_DATABASE_NAME = "dataset_scrfd"
 
 SUPPORTED_EXTENSIONS = {
     ".jpg",

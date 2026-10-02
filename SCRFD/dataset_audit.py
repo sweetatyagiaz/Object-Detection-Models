@@ -14,8 +14,8 @@ from insightface.app import FaceAnalysis
 
 RAW_DATA_PATH = "../datasets/raw_data"
 
-REPORTS_DIR = "../datasets/reports"
-PREVIEW_DIR = "../datasets/previews"
+REPORTS_DIR = "../datasets/results/SCRFD/reports"
+PREVIEW_DIR = "../datasets/results/SCRFD/previews"
 
 SUPPORTED_EXTENSIONS = {
     ".jpg",

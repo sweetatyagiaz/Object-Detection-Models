@@ -6,6 +6,17 @@ Extract Face
 1. SFace
 2. SCRFD
 
+datasets
+------------------------
+1. SFace
+2. SCRFD: Strict in generating facedata (dataset_scrfd)
+
+Note:
+---------------------
+1. SCRFD face extracion is better than SFace
+2. Will confidence increase in SFace if we use SCRFD datase
+3. 
+
 
 
 HEIC to jpg
