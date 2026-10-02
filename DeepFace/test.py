@@ -1,68 +1,85 @@
+"""
+Run the face search pipeline.
+
+Examples:
+    python test.py                                  # dataset, embed, index, removed, search, plot
+    python test.py --stages search plot             # only search (index already built)
+    python test.py --stages recover embed index     # retry no-face photos, then rebuild
+    python test.py --query ../datasets/images/Other.jpg --stages search plot
+
+    python test.py --stages recover embed index removed search plot
+"""
+import argparse
+import logging
 from pathlib import Path
 
-from utils import create_dataset, create_embeddings, create_index, removed_files_list, \
-    search_image, plot_search_result
+from utils import (Config, create_dataset, create_embeddings, create_index,
+                   plot_search_result, recover_no_face, search_image,
+                   setup_logging, show_removed)
 
-# ---------- Config ----------
-MODEL = "Facenet512" 
+ALL_STAGES = ["dataset", "recover", "embed", "index", "removed", "search", "plot"]
+DEFAULT_STAGES = ["dataset", "embed", "index", "removed", "search", "plot"]  # recover is opt-in
 
-DATABASE_DIR = Path("../datasets/raw_data/")
-CROPS_DIR = Path("../datasets/dataset_deepface/")
-MANIFEST = Path("../datasets/results/crops_manifest_deepface.json")
-STATE = Path("../datasets/results/crops_state_deepface.json")   # resume info
-EMB_PATH = Path(f"../datasets/results/emb_all_{MODEL}_deepface.pkl")    # every crop, before dedup
-INDEX_PATH = Path(f"../datasets/results/index_{MODEL}_deepface.pkl")    # final, deduplicated
-QUERY_IMAGE = "../datasets/images/Tejrit.jpg"
+# ---------- Config (edit here) ----------
+CFG = Config(
+    database_dir=Path("../datasets/raw_data/"),
+    crops_dir=Path("../datasets/dataset_deepface/"),
+    results_dir=Path("../datasets/results/"),
+    query_image=Path("../datasets/images/Tejrit.jpg"),
 
-QUERY_DETECTOR = "retinaface"   # strongest detector, since this one face drives the search
-QUERY_FACE_IDX = None           # None = largest face; or 0, 1, ... to force one
+    model="Facenet512",
+    detector="yunet",              # crop dataset detector
+    query_detector="retinaface",   # strongest detector, since this one face drives the search
+    expand=10,
 
-STRICT_THRESHOLD = 0.30         # Facenet512 cosine; ArcFace would be ~0.68
-TOP_K = 12
-MIN_DIST = 0.0                  # set to 0.05 to hide the query photo itself if it is in the database
-CONF_K = 15                     # steepness of the confidence curve (ArcFace: ~7)
+    min_face_px=40,
+    min_conf=0.90,
 
+    dup_threshold=0.05,
+    scope="folder",                # "folder" or "global"
 
-DETECTOR = "yunet"          # or "retinaface" for better quality
-EXTS = (".jpg", ".jpeg", ".png")
-MIN_FACE_PX, MIN_CONF = 40, 0.90
-EXPAND = 10                 # expand_percentage, keep the same for the query image
-
-DUP_THRESHOLD = 0.05      # cosine distance below this = same picture
-SCOPE = "folder"          # "folder": dedupe within the same folder, "global": across all folders
-
-
-
-# Create folders if not exist
-CROPS_DIR.mkdir(parents=True, exist_ok=True)
-MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    strict_threshold=0.30,         # Facenet512 cosine; ArcFace is ~0.68
+    top_k=12,
+    min_dist=0.0,                  # 0.05 hides the query photo itself if it is in the database
+    conf_k=15.0,                   # ArcFace: ~7
+    query_face_idx=None,           # None = largest face
+)
 
 
+def main(argv=None) -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--stages", nargs="+", choices=ALL_STAGES, default=DEFAULT_STAGES)
+    ap.add_argument("--query", type=Path, help="override the query image")
+    ap.add_argument("--save-plot", type=Path, help="save the result figure to this path")
+    ap.add_argument("--debug", action="store_true", help="verbose logging")
+    args = ap.parse_args(argv)
 
-#----------------------------------------------------
-# CREATE DATASET
-create_dataset(DATABASE_DIR=DATABASE_DIR, CROPS_DIR=CROPS_DIR, MANIFEST=MANIFEST, 
-               STATE=STATE, DETECTOR=DETECTOR, EXTS=EXTS, MIN_FACE_PX=MIN_FACE_PX,
-               MIN_CONF=MIN_CONF, EXPAND=EXPAND)
+    setup_logging(logging.DEBUG if args.debug else logging.INFO,
+                  log_file=CFG.results_dir / "pipeline.log")
+    if args.query:
+        CFG.query_image = args.query
+    CFG.make_dirs()
+
+    stages = set(args.stages)
+    matches, q_box = None, None
+
+    if "dataset" in stages:
+        create_dataset(CFG)
+    if "recover" in stages:
+        recover_no_face(CFG, detector="retinaface", min_face_px=25, min_conf=0.80)
+    if "embed" in stages:
+        create_embeddings(CFG)
+    if "index" in stages:
+        create_index(CFG)
+    if "removed" in stages:
+        show_removed(CFG, top=10)
+    if "search" in stages:
+        matches, q_box = search_image(CFG)
+    if "plot" in stages:
+        if matches is None:
+            matches, q_box = search_image(CFG)
+        plot_search_result(CFG, matches, q_box, cols=4, save_path=args.save_plot)
 
 
-# CREATE EMBEDDINGS
-# create_embeddings(MODEL=MODEL, CROPS_DIR=CROPS_DIR, MANIFEST=MANIFEST, EMB_PATH=EMB_PATH)
-
-
-# CREATE INDEX
-create_index(EMB_PATH=EMB_PATH, CROPS_DIR=CROPS_DIR, INDEX_PATH=INDEX_PATH, 
-             DUP_THRESHOLD=DUP_THRESHOLD, MANIFEST=MANIFEST, SCOPE=SCOPE)
-
-# SHOW REMOVE FILE LIST
-removed_files_list(INDEX_PATH=INDEX_PATH)
-
-# SEARCH IMAGE
-matches, q_box = search_image(MODEL=MODEL, DATABASE_DIR=DATABASE_DIR, INDEX_PATH=INDEX_PATH, 
-             QUERY_IMAGE=QUERY_IMAGE, QUERY_DETECTOR=QUERY_DETECTOR, EXPAND=EXPAND,
-             QUERY_FACE_IDX=QUERY_FACE_IDX, MIN_DIST=MIN_DIST,
-             STRICT_THRESHOLD=STRICT_THRESHOLD, CONF_K=CONF_K, TOP_K=TOP_K)
-
-# PLOT SEARCH RESULT
-plot_search_result(cols=4, q_box=q_box, matches=matches, QUERY_IMAGE=QUERY_IMAGE, 
-                   STRICT_THRESHOLD=STRICT_THRESHOLD)
+if __name__ == "__main__":
+    main()
