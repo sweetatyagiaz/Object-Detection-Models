@@ -2,21 +2,12 @@
 Face search pipeline built on DeepFace.
 
 Stages (each one is resumable and cached):
-    1. create_dataset      raw photos  -> aligned face crops + manifest
-    2. recover_no_face     retry photos with no face using a stronger detector
-    3. create_embeddings   crops       -> embeddings (cached)
-    4. create_index        embeddings  -> de-duplicated index
-    5. search_person       query photo -> ranked people (one centroid per folder)
-    6. search_image        query photo -> ranked photos
-    7. plot_search_result  matches     -> figure
-
-All messages go through the "facesearch" logger, nothing uses print().
-
-python test.py                                  # full pipeline, then person + photo search
-python test.py --stages person                  # who is this?
-python test.py --within-person --stages search plot
-python test.py --stages recover embed index     # retry the no-face photos first
-
+    1. create_dataset     raw photos  -> aligned face crops + manifest
+    2. recover_no_face    retry photos with no face using a stronger detector
+    3. create_embeddings  crops       -> embeddings (cached)
+    4. create_index       embeddings  -> de-duplicated index
+    5. search_image       query photo -> ranked matches
+    6. plot_search_result matches     -> figure
 """
 from __future__ import annotations
 
@@ -27,7 +18,7 @@ import math
 import os
 import pickle
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -40,16 +31,6 @@ from deepface import DeepFace
 from tqdm import tqdm
 
 log = logging.getLogger("facesearch")
-
-# Approximate DeepFace cosine-distance cutoffs per model (can vary slightly by version)
-MODEL_THRESHOLDS = {
-    "Facenet512": 0.30,
-    "Facenet": 0.40,
-    "ArcFace": 0.68,
-    "VGG-Face": 0.68,
-    "SFace": 0.593,
-    "GhostFaceNet": 0.65,
-}
 
 
 # --------------------------------------------------------------------------- #
@@ -95,20 +76,15 @@ class Config:
     min_face_px: int = 40
     min_conf: float = 0.90
 
-    # Thresholds. Leave as None to derive them from the model (see MODEL_THRESHOLDS)
-    strict_threshold: Optional[float] = None   # photo-level match cutoff
-    conf_k: Optional[float] = None             # confidence curve steepness, ~4.5 / threshold
-    dup_threshold: Optional[float] = None      # duplicate cutoff, scales with the model
-    person_threshold: Optional[float] = None   # centroid-level cutoff, defaults to strict_threshold
-
     # De-duplication
+    dup_threshold: float = 0.05          # cosine distance below this = same picture
     scope: str = "folder"                # "folder" or "global"
 
     # Search
+    strict_threshold: float = 0.30       # Facenet512 cosine; ArcFace is ~0.68
     top_k: int = 12
-    top_people: int = 5
-    min_photos_per_person: int = 1       # ignore folders with fewer photos when ranking people
     min_dist: float = 0.0                # 0.05 hides the query photo itself if it is in the DB
+    conf_k: float = 15.0                 # confidence curve steepness (ArcFace: ~7)
     query_face_idx: Optional[int] = None # None = largest face
 
     def __post_init__(self):
@@ -116,19 +92,6 @@ class Config:
             setattr(self, name, Path(getattr(self, name)))
         if self.scope not in ("folder", "global"):
             raise ValueError("scope must be 'folder' or 'global'")
-
-        base = MODEL_THRESHOLDS.get(self.model)
-        if self.strict_threshold is None:
-            if base is None:
-                raise ValueError(f"Unknown model '{self.model}'. Set strict_threshold explicitly "
-                                 f"or add the model to MODEL_THRESHOLDS.")
-            self.strict_threshold = base
-        if self.conf_k is None:
-            self.conf_k = round(4.5 / self.strict_threshold, 1)
-        if self.dup_threshold is None:
-            self.dup_threshold = round(0.05 * self.strict_threshold / 0.30, 3)
-        if self.person_threshold is None:
-            self.person_threshold = self.strict_threshold
 
     # Derived paths
     @property
@@ -151,11 +114,6 @@ class Config:
         self.crops_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    def describe(self) -> str:
-        return (f"model={self.model} detector={self.detector} query_detector={self.query_detector} "
-                f"strict={self.strict_threshold} person={self.person_threshold} "
-                f"dup={self.dup_threshold} conf_k={self.conf_k} scope={self.scope}")
-
 
 @dataclass
 class Match:
@@ -169,15 +127,6 @@ class Match:
     @property
     def folder(self) -> str:
         return Path(self.crop).parent.as_posix()
-
-
-@dataclass
-class PersonMatch:
-    person: str          # folder name, relative to the crops folder
-    dist: float          # cosine distance between the query and the person's centroid
-    conf: float
-    n_photos: int
-    best_photo_dist: float   # distance to the closest single photo of this person
 
 
 # --------------------------------------------------------------------------- #
@@ -225,11 +174,6 @@ def _file_hash(path: Path) -> str:
     return h.hexdigest()
 
 
-def _person_of(crop_name: str) -> str:
-    """Person = the folder a crop lives in."""
-    return Path(crop_name).parent.as_posix()
-
-
 def _detect(img, detector: str, expand: int) -> list:
     """
     Run face detection. Returns [] when no face is found.
@@ -252,11 +196,10 @@ def _face_to_bgr(face: np.ndarray) -> np.ndarray:
 
 
 def _crop_photo(src: Path, rel: Path, cfg: Config, detector: str,
-                min_px: int, min_conf: float, manifest: dict) -> tuple[int, int]:
-    """Detect faces in one photo and save the valid ones. Returns (kept, detected)."""
-    faces = _detect(str(src), detector, cfg.expand)
+                min_px: int, min_conf: float, manifest: dict) -> int:
+    """Detect faces in one photo and save the valid ones. Returns how many were kept."""
     kept = 0
-    for f in faces:
+    for f in _detect(str(src), detector, cfg.expand):
         fa, conf = f["facial_area"], float(f.get("confidence", 1.0))
         if fa["w"] < min_px or fa["h"] < min_px or conf < min_conf:
             continue
@@ -272,7 +215,7 @@ def _crop_photo(src: Path, rel: Path, cfg: Config, detector: str,
             "detector": detector,
         }
         kept += 1
-    return kept, len(faces)
+    return kept
 
 
 # --------------------------------------------------------------------------- #
@@ -312,8 +255,8 @@ def create_dataset(cfg: Config, checkpoint_every: int = 25) -> dict:
         hashes[h] = rel_s
 
         try:
-            kept, _ = _crop_photo(path, rel, cfg, cfg.detector,
-                                  cfg.min_face_px, cfg.min_conf, manifest)
+            kept = _crop_photo(path, rel, cfg, cfg.detector,
+                               cfg.min_face_px, cfg.min_conf, manifest)
         except ImportError:
             save()
             raise                                    # broken install, stop immediately
@@ -367,8 +310,9 @@ def recover_no_face(cfg: Config, detector: str = "retinaface",
     for n, rel_s in enumerate(tqdm(todo, desc=f"Recovering ({detector})", unit="img"), 1):
         rel = Path(rel_s)
         try:
-            kept, detected = _crop_photo(cfg.database_dir / rel, rel, cfg, detector,
-                                         min_face_px, min_conf, manifest)
+            faces = _detect(str(cfg.database_dir / rel), detector, cfg.expand)
+            kept = _crop_photo(cfg.database_dir / rel, rel, cfg, detector,
+                               min_face_px, min_conf, manifest) if faces else 0
         except ImportError:
             save()
             raise
@@ -380,7 +324,7 @@ def recover_no_face(cfg: Config, detector: str = "retinaface",
         if kept:
             no_face.discard(rel_s)
             outcome["recovered"] += 1
-        elif detected:
+        elif faces:
             outcome["found_but_filtered"] += 1
         else:
             outcome["not_detected"] += 1
@@ -448,7 +392,7 @@ def create_index(cfg: Config, emb: Optional[dict] = None) -> dict:
     names = sorted(n for n in emb if n in manifest and (cfg.crops_dir / n).exists())
     groups: dict[str, list[str]] = {}
     for n in names:
-        key = _person_of(n) if cfg.scope == "folder" else ""
+        key = Path(n).parent.as_posix() if cfg.scope == "folder" else ""
         groups.setdefault(key, []).append(n)
 
     index: dict = {}
@@ -493,7 +437,7 @@ def show_removed(cfg: Config, top: int = 10) -> list:
 
 
 # --------------------------------------------------------------------------- #
-# Query embedding
+# Stage 4: search
 # --------------------------------------------------------------------------- #
 def embed_query(cfg: Config, query_image: Optional[Path] = None) -> tuple[np.ndarray, tuple]:
     """Detect, crop and embed the query photo. Returns (unit vector, face box)."""
@@ -522,91 +466,18 @@ def embed_query(cfg: Config, query_image: Optional[Path] = None) -> tuple[np.nda
     return unit(rep["embedding"]), box
 
 
-# --------------------------------------------------------------------------- #
-# Search: by person (one centroid per folder)
-# --------------------------------------------------------------------------- #
-def build_person_centroids(index: dict, min_photos: int = 1) -> dict:
-    """
-    One unit vector per folder (person): the average of that folder's embeddings.
-    Also keeps the unit vectors, to report the best single-photo distance.
-    """
-    groups: dict[str, list[np.ndarray]] = {}
-    for name, entry in index.items():
-        groups.setdefault(_person_of(name), []).append(unit(entry["emb"]))
-
-    people = {}
-    for person, vecs in groups.items():
-        if len(vecs) < min_photos:
-            continue
-        V = np.array(vecs)
-        people[person] = {"centroid": unit(V.mean(axis=0)), "vecs": V, "n_photos": len(V)}
-    return people
-
-
-def search_person(cfg: Config, index: Optional[dict] = None,
-                  query: Optional[tuple] = None) -> list[PersonMatch]:
-    """
-    Rank people (folders) by the distance between the query and each centroid.
-    `query` is an optional precomputed (vector, box) from embed_query().
-    """
-    if index is None:
-        index = load_pickle_file(cfg.index_path)
-    q, _ = query if query is not None else embed_query(cfg)
-
-    people = build_person_centroids(index, cfg.min_photos_per_person)
-    if not people:
-        log.warning("No folders with at least %d photos to rank.", cfg.min_photos_per_person)
-        return []
-
-    ranked = []
-    for person, p in people.items():
-        d = 1.0 - float(p["centroid"] @ q)
-        best = float((1.0 - p["vecs"] @ q).min())
-        ranked.append(PersonMatch(person, d, confidence_pct(d, cfg.person_threshold, cfg.conf_k),
-                                  p["n_photos"], best))
-    ranked.sort(key=lambda m: m.dist)
-    ranked = ranked[:cfg.top_people]
-
-    log.info("Person search (cutoff %.2f), top %d:", cfg.person_threshold, len(ranked))
-    for i, m in enumerate(ranked, 1):
-        flag = "MATCH" if m.dist < cfg.person_threshold else "weak"
-        log.info("  #%d %-5s d=%.3f  conf=%5.1f%%  best_photo=%.3f  photos=%d  %s",
-                 i, flag, m.dist, m.conf, m.best_photo_dist, m.n_photos, m.person)
-
-    if len(ranked) > 1:
-        gap = ranked[1].dist - ranked[0].dist
-        log.info("Gap between #1 and #2: %.3f %s", gap,
-                 "(clear winner)" if gap > 0.10 else "(close call, check visually)")
-    return ranked
-
-
-def filter_index_to_person(index: dict, person: str) -> dict:
-    """Keep only the entries from one person's folder."""
-    sub = {n: e for n, e in index.items() if _person_of(n) == person}
-    log.info("Restricted index to '%s': %d entries", person, len(sub))
-    return sub
-
-
-# --------------------------------------------------------------------------- #
-# Search: by photo
-# --------------------------------------------------------------------------- #
 def search_image(cfg: Config, index: Optional[dict] = None,
-                 query: Optional[tuple] = None) -> tuple[list[Match], tuple]:
+                 query_image: Optional[Path] = None) -> tuple[list[Match], tuple]:
     """
     Rank the index against a raw query photo.
-    Pass a preloaded `index` to run many queries without reloading the file, or a
-    filtered one (see filter_index_to_person) to search inside one person's folder.
-    `query` is an optional precomputed (vector, box) from embed_query().
+    Pass a preloaded `index` to run many queries without reloading the file.
     """
     if index is None:
         index = load_pickle_file(cfg.index_path)
-    if not index:
-        raise ValueError("The index is empty, nothing to search.")
-
     names = list(index)
     vecs = unit(np.array([index[n]["emb"] for n in names]))
 
-    q, q_box = query if query is not None else embed_query(cfg)
+    q, q_box = embed_query(cfg, query_image)
     dist = 1.0 - vecs @ q
 
     seen, matches = set(), []
@@ -627,39 +498,15 @@ def search_image(cfg: Config, index: Optional[dict] = None,
             break
 
     n_strict = sum(m.dist < cfg.strict_threshold for m in matches)
-    log.info("Photo search: %d strict matches (< %.2f), showing top %d",
+    log.info("Search: %d strict matches (< %.2f), showing top %d",
              n_strict, cfg.strict_threshold, len(matches))
     for i, m in enumerate(matches, 1):
         log.info("  #%-2d d=%.3f  conf=%5.1f%%  dupes=%d  %s", i, m.dist, m.conf, m.n_dupes, m.crop)
     return matches, q_box
 
 
-def search_person_then_photos(cfg: Config, index: Optional[dict] = None
-                              ) -> tuple[list[PersonMatch], list[Match], tuple]:
-    """
-    Combined search: identify the most likely person, then list that person's
-    matching photos. The query is embedded only once.
-    """
-    if index is None:
-        index = load_pickle_file(cfg.index_path)
-    query = embed_query(cfg)
-
-    people = search_person(cfg, index, query=query)
-    if not people:
-        return [], [], query[1]
-
-    top = people[0]
-    if top.dist >= cfg.person_threshold:
-        log.warning("Best person '%s' is above the person cutoff (d=%.3f >= %.2f). "
-                    "Searching all photos instead.", top.person, top.dist, cfg.person_threshold)
-        matches, q_box = search_image(cfg, index, query=query)
-    else:
-        matches, q_box = search_image(cfg, filter_index_to_person(index, top.person), query=query)
-    return people, matches, q_box
-
-
 # --------------------------------------------------------------------------- #
-# Plot
+# Stage 5: plot
 # --------------------------------------------------------------------------- #
 def load_with_box(path: Path, box: tuple, color: tuple) -> np.ndarray:
     img = cv2.imread(str(path))
