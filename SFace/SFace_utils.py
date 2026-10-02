@@ -214,8 +214,8 @@ def get_folder_list(main_dir=False):
 
     return folder_list
 
-def prepare_sface_dataset(score_threshold=0.3, raw_dataset_dir=False, recognizer_model=False, detector_model=False, 
-                          output_folder=False, dataset_dir=False):
+def prepare_sface_dataset(score_threshold=0.3, raw_dataset_dir=False, recognizer_model=False, 
+                          detector_model=False, output_folder=False, dataset_dir=False):
 
     # Prepare SFace datset
 
