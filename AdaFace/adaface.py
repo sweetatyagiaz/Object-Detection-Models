@@ -1,15 +1,38 @@
-import os
-import cv2
+"""
+AdaFace (ONNX) + FAISS person search.
+
+Fixes vs. the original version:
+  * BGR input (AdaFace is trained on BGR; cv2.imread already gives BGR)
+  * Face detection + 5-point alignment (insightface) with a safe fallback
+  * Batched embedding extraction
+  * Exact IndexFlatIP search (no approximate misses on small/medium galleries)
+  * Person-level aggregation done on a larger candidate pool, THEN top_k
+  * Quality score (feature norm) stored per image, optional quality filter
+  * Clear warnings instead of silent skips
+
+Dataset layout (unchanged):
+    database_dir/
+        1.Alice/ img1.jpg, img2.jpg ...
+        2.Bob/   ...
+
+Requirements:
+    pip install onnxruntime(-gpu) faiss-cpu opencv-python numpy insightface
+"""
 import json
+import logging
+import os
+from collections import defaultdict
+
+import cv2
 import faiss
 import numpy as np
 import onnxruntime as ort
 
-from collections import defaultdict
+log = logging.getLogger("adaface")
+IMG_EXT = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
 
 class AdaFace:
-
     INPUT_SIZE = (112, 112)
     DIMENSION = 512
 
@@ -19,401 +42,301 @@ class AdaFace:
         database_dir,
         index_path,
         mapping_path,
-        providers=None
+        providers=None,
+        use_detector=True,
+        det_size=(640, 640),
+        fallback_on_no_face=True,
+        batch_size=32,
+        min_quality=None,
     ):
-        self.model_path = model_path
+        """
+        use_detector        : detect + align faces with insightface (recommended).
+        fallback_on_no_face : if no face is detected (e.g. very tight crops),
+                              pad to square and resize instead of skipping.
+        min_quality         : drop gallery images whose feature norm is below this
+                              (only works if the ONNX model outputs the norm).
+        """
         self.database_dir = database_dir
         self.index_path = index_path
         self.mapping_path = mapping_path
+        self.fallback_on_no_face = fallback_on_no_face
+        self.batch_size = batch_size
+        self.min_quality = min_quality
 
-        if providers is None:
-            providers = [
-                "CUDAExecutionProvider",
-                "CPUExecutionProvider"
-            ]
+        wanted = providers or ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        available = ort.get_available_providers()
+        providers = [p for p in wanted if p in available] or ["CPUExecutionProvider"]
 
-        self.session = ort.InferenceSession(
-            model_path,
-            providers=providers
-        )
+        self.session = ort.InferenceSession(model_path, providers=providers)
+        inp = self.session.get_inputs()[0]
+        self.input_name = inp.name
+        self.output_names = [o.name for o in self.session.get_outputs()]
 
-        self.input_name = (
-            self.session.get_inputs()[0].name
-        )
+        # Fixed-batch ONNX exports (batch dim is an int) must run one by one.
+        first_dim = inp.shape[0]
+        self._max_batch = 1 if isinstance(first_dim, int) else batch_size
+        if len(self.output_names) < 2:
+            log.warning(
+                "ONNX model has a single output: feature norm (quality) is not "
+                "available, quality filtering will be ineffective."
+            )
 
-        self.output_name = (
-            self.session.get_outputs()[0].name
-        )
+        self.detector = None
+        self._face_align = None
+        if use_detector:
+            try:
+                from insightface.app import FaceAnalysis
+                from insightface.utils import face_align
+
+                self.detector = FaceAnalysis(
+                    name="buffalo_l",
+                    allowed_modules=["detection"],
+                    providers=providers,
+                )
+                self.detector.prepare(
+                    ctx_id=0 if "CUDAExecutionProvider" in providers else -1,
+                    det_size=det_size,
+                )
+                self._face_align = face_align
+            except Exception as e:
+                log.warning(f"insightface unavailable ({e}); using resize fallback only.")
 
         self.index = None
-        self.mapping = {}
+        self.mapping = []
 
-    def preprocess(
-        self,
-        image
-    ):
-        image = cv2.resize(
-            image,
-            self.INPUT_SIZE
+    # ------------------------------------------------------------------
+    # Preprocessing
+    # ------------------------------------------------------------------
+    def _pad_resize(self, image):
+        """Pad to square (keeps aspect ratio) then resize to 112x112."""
+        h, w = image.shape[:2]
+        s = max(h, w)
+        top = (s - h) // 2
+        left = (s - w) // 2
+        image = cv2.copyMakeBorder(
+            image, top, s - h - top, left, s - w - left,
+            cv2.BORDER_CONSTANT, value=(0, 0, 0),
         )
+        return cv2.resize(image, self.INPUT_SIZE)
 
-        image = cv2.cvtColor(
-            image,
-            cv2.COLOR_BGR2RGB
-        )
+    def align(self, image):
+        """BGR image -> aligned 112x112 BGR face, or None."""
+        if self.detector is not None:
+            img = image
+            # Detectors struggle with tiny crops: add a border for context.
+            if max(img.shape[:2]) < 256:
+                pad = int(0.5 * max(img.shape[:2]))
+                img = cv2.copyMakeBorder(
+                    img, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=(0, 0, 0)
+                )
+            faces = self.detector.get(img)
+            if faces:
+                face = max(
+                    faces,
+                    key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]),
+                )
+                return self._face_align.norm_crop(img, face.kps, image_size=112)
+            if not self.fallback_on_no_face:
+                return None
+        return self._pad_resize(image)
 
-        image = image.astype(
-            np.float32
-        )
+    def preprocess(self, aligned_bgr):
+        """Aligned 112x112 BGR uint8 -> (3,112,112) float32 in [-1, 1]. Stays BGR."""
+        x = aligned_bgr.astype(np.float32)
+        x = x / 127.5 - 1.0
+        return np.transpose(x, (2, 0, 1))
 
-        image = image / 127.5 - 1.0
+    # ------------------------------------------------------------------
+    # Embedding
+    # ------------------------------------------------------------------
+    def _embed_aligned(self, faces):
+        """List of aligned BGR faces -> (embeddings (n,512), quality (n,))."""
+        embs, quals = [], []
+        for i in range(0, len(faces), self._max_batch):
+            chunk = faces[i:i + self._max_batch]
+            batch = np.stack([self.preprocess(f) for f in chunk]).astype(np.float32)
+            outs = self.session.run(self.output_names, {self.input_name: batch})
+            feat = outs[0].astype(np.float32).reshape(len(chunk), -1)
+            raw_norm = np.linalg.norm(feat, axis=1)
+            if len(outs) > 1:
+                q = outs[1].astype(np.float32).reshape(-1)
+            else:
+                q = raw_norm
+            feat = feat / np.maximum(raw_norm[:, None], 1e-12)
+            embs.append(feat)
+            quals.append(q)
+        return np.concatenate(embs), np.concatenate(quals)
 
-        image = np.transpose(
-            image,
-            (2, 0, 1)
-        )
+    def get_embedding(self, image):
+        """BGR image -> (embedding (512,), quality) or None if no usable face."""
+        face = self.align(image)
+        if face is None:
+            return None
+        e, q = self._embed_aligned([face])
+        return e[0], float(q[0])
 
-        image = np.expand_dims(
-            image,
-            axis=0
-        )
-
-        return image
-
-    def get_embedding(
-        self,
-        image
-    ):
-        image = self.preprocess(
-            image
-        )
-
-        embedding = self.session.run(
-            [self.output_name],
-            {
-                self.input_name: image
-            }
-        )[0]
-
-        embedding = embedding.flatten()
-
-        embedding = (
-            embedding /
-            np.linalg.norm(
-                embedding
-            )
-        )
-
-        return embedding.astype(
-            np.float32
-        )
-
-    def build_index(self):
-
-        embeddings = []
-        mapping = {}
-
-        faiss_id = 0
-
-        for person_dir in sorted(
-            os.listdir(self.database_dir)
-        ):
-
-            person_path = os.path.join(
-                self.database_dir,
-                person_dir
-            )
-
+    # ------------------------------------------------------------------
+    # Gallery
+    # ------------------------------------------------------------------
+    def _collect_gallery(self):
+        items = []
+        for person_dir in sorted(os.listdir(self.database_dir)):
+            person_path = os.path.join(self.database_dir, person_dir)
             if not os.path.isdir(person_path):
                 continue
-
             try:
-
-                person_id = int(
-                    person_dir.split(".")[0]
-                )
-
-                person_name = (
-                    person_dir.split(".", 1)[1]
-                )
-
-            except Exception:
+                pid_str, name = person_dir.split(".", 1)
+                person_id = int(pid_str)
+            except ValueError:
+                log.warning(f"Skipping folder '{person_dir}' (expected '<id>.<name>')")
                 continue
+            for root, _, files in os.walk(person_path):
+                for f in sorted(files):
+                    if f.lower().endswith(IMG_EXT):
+                        items.append((person_id, name.strip(), os.path.join(root, f)))
+        return items
 
-            print(
-                f"Processing: {person_name}"
-            )
+    def embed_database(self):
+        """
+        Embed every gallery image. Returns a dict with:
+        embeddings (N,512), quality (N,), person_ids (N,), names, images.
+        """
+        items = self._collect_gallery()
+        log.info(f"Found {len(items)} gallery images")
 
-            for root, _, files in os.walk(
-                person_path
-            ):
+        embs, quals, meta = [], [], []
+        skipped = 0
+        bs = self.batch_size
 
-                for file in files:
+        for start in range(0, len(items), bs):
+            faces, ok = [], []
+            for it in items[start:start + bs]:
+                img = cv2.imread(it[2])
+                face = None if img is None else self.align(img)
+                if face is None:
+                    skipped += 1
+                    log.warning(f"Skipped (unreadable / no face): {it[2]}")
+                    continue
+                faces.append(face)
+                ok.append(it)
+            if faces:
+                e, q = self._embed_aligned(faces)
+                embs.append(e)
+                quals.append(q)
+                meta.extend(ok)
+            print(f"  embedded {min(start + bs, len(items))}/{len(items)}", end="\r")
+        print()
 
-                    if not file.lower().endswith(
-                        (
-                            ".jpg",
-                            ".jpeg",
-                            ".png"
-                        )
-                    ):
-                        continue
+        if not embs:
+            raise RuntimeError("No embeddings produced. Check dataset path and images.")
 
-                    image_path = os.path.join(
-                        root,
-                        file
-                    )
+        return {
+            "embeddings": np.concatenate(embs).astype(np.float32),
+            "quality": np.concatenate(quals).astype(np.float32),
+            "person_ids": np.array([m[0] for m in meta]),
+            "names": [m[1] for m in meta],
+            "images": [m[2] for m in meta],
+            "skipped": skipped,
+        }
 
-                    image = cv2.imread(
-                        image_path
-                    )
+    def build_index(self):
+        data = self.embed_database()
+        keep = np.ones(len(data["embeddings"]), dtype=bool)
+        if self.min_quality is not None:
+            keep = data["quality"] >= self.min_quality
+            print(f"Quality filter removed {int((~keep).sum())} images")
 
-                    if image is None:
-                        continue
+        embeddings = np.ascontiguousarray(data["embeddings"][keep])
+        if len(embeddings) == 0:
+            raise RuntimeError("All images were filtered out by min_quality.")
 
-                    embedding = (
-                        self.get_embedding(
-                            image
-                        )
-                    )
+        # Exact inner-product index (== cosine, vectors are unit length).
+        self.index = faiss.IndexFlatIP(self.DIMENSION)
+        self.index.add(embeddings)
 
-                    embeddings.append(
-                        embedding
-                    )
-
-                    mapping[
-                        str(faiss_id)
-                    ] = {
-                        "person_id":
-                        person_id,
-
-                        "name":
-                        person_name.strip(),
-
-                        "image":
-                        image_path
-                    }
-
-                    faiss_id += 1
-
-        embeddings = np.asarray(
-            embeddings,
-            dtype=np.float32
-        )
-
-        print(
-            f"Embeddings Shape: "
-            f"{embeddings.shape}"
-        )
-
-        #
-        # IMPORTANT
-        #
-        faiss.normalize_L2(
-            embeddings
-        )
-
-        self.index = faiss.IndexHNSWFlat(
-            self.DIMENSION,
-            32,
-            faiss.METRIC_INNER_PRODUCT
-        )
-
-        self.index.hnsw.efConstruction = 200
-        self.index.hnsw.efSearch = 100
-
-        self.index.add(
-            embeddings
-        )
-
-        self.mapping = mapping
-
+        idx = np.where(keep)[0]
+        self.mapping = [
+            {
+                "person_id": int(data["person_ids"][i]),
+                "name": data["names"][i],
+                "image": data["images"][i],
+                "quality": float(data["quality"][i]),
+            }
+            for i in idx
+        ]
         self.save_index()
+        print(f"Indexed {len(embeddings)} embeddings "
+              f"({len(set(m['person_id'] for m in self.mapping))} people), "
+              f"skipped {data['skipped']}")
 
-        print(
-            f"Total Embeddings: "
-            f"{len(embeddings)}"
-        )
+    def save_index(self):
+        for path in (self.index_path, self.mapping_path):
+            folder = os.path.dirname(path)
+            if folder:
+                os.makedirs(folder, exist_ok=True)
+        faiss.write_index(self.index, self.index_path)
+        with open(self.mapping_path, "w") as f:
+            json.dump(self.mapping, f, indent=2)
 
-        print(
-            "FAISS Index Saved"
-        )
+    def load_index(self):
+        self.index = faiss.read_index(self.index_path)
+        with open(self.mapping_path) as f:
+            self.mapping = json.load(f)
 
-    def save_index(
-        self
-    ):
-        os.makedirs(
-            os.path.dirname(
-                self.index_path
-            ),
-            exist_ok=True
-        )
-
-        faiss.write_index(
-            self.index,
-            self.index_path
-        )
-
-        with open(
-            self.mapping_path,
-            "w"
-        ) as file:
-
-            json.dump(
-                self.mapping,
-                file,
-                indent=4
-            )
-
-    def load_index(
-        self
-    ):
-        self.index = (
-            faiss.read_index(
-                self.index_path
-            )
-        )
-
-        with open(
-            self.mapping_path,
-            "r"
-        ) as file:
-
-            self.mapping = (
-                json.load(
-                    file
-                )
-            )
-
-    def search_face(
-        self,
-        image_path,
-        top_k=5,
-        threshold=0.65
-    ):
-
+    # ------------------------------------------------------------------
+    # Search
+    # ------------------------------------------------------------------
+    def search_image(self, image, top_k=5, threshold=0.4, pool=None):
+        """
+        image     : BGR numpy image
+        top_k     : number of PEOPLE to return
+        threshold : minimum best_score for a person to be returned (None = no cut)
+        pool      : number of nearest gallery images to inspect (default max(50, 10*top_k))
+        """
         if self.index is None:
             self.load_index()
 
-        image = cv2.imread(
-            image_path
-        )
+        res = self.get_embedding(image)
+        if res is None:
+            return []
+        query, _ = res
+        query = query.reshape(1, -1).astype(np.float32)
 
-        if image is None:
-            raise Exception(
-                f"Cannot load image: "
-                f"{image_path}"
-            )
+        pool = min(pool or max(50, top_k * 10), self.index.ntotal)
+        sims, ids = self.index.search(query, pool)
 
-        query_embedding = (
-            self.get_embedding(
-                image
-            )
-        )
-
-        query_embedding = (
-            query_embedding
-            .reshape(1, -1)
-            .astype(np.float32)
-        )
-
-        #
-        # IMPORTANT
-        #
-        faiss.normalize_L2(
-            query_embedding
-        )
-
-        similarities, indices = (
-            self.index.search(
-                query_embedding,
-                top_k
-            )
-        )
-
-        persons = defaultdict(
-            list
-        )
-
-        for score, idx in zip(
-            similarities[0],
-            indices[0]
-        ):
-
+        persons = defaultdict(list)
+        for score, idx in zip(sims[0], ids[0]):
             if idx < 0:
                 continue
-
-            score = float(score)
-
-            if score < threshold:
-                continue
-
-            person = self.mapping.get(
-                str(idx)
-            )
-
-            if person is None:
-                continue
-
-            persons[
-                person["person_id"]
-            ].append(
-                {
-                    "score": score,
-                    "name": person["name"],
-                    "image": person["image"]
-                }
+            m = self.mapping[int(idx)]
+            persons[m["person_id"]].append(
+                {"score": float(score), "name": m["name"], "image": m["image"]}
             )
 
         results = []
-
-        for person_id, matches in (
-            persons.items()
-        ):
-
-            best_score = max(
-                x["score"]
-                for x in matches
-            )
-
-            avg_score = (
-                sum(
-                    x["score"]
-                    for x in matches
-                )
-                /
-                len(matches)
-            )
-
+        for pid, matches in persons.items():
+            matches.sort(key=lambda x: x["score"], reverse=True)
+            best = matches[0]
+            if threshold is not None and best["score"] < threshold:
+                continue
+            top3 = [x["score"] for x in matches[:3]]
             results.append(
                 {
-                    "person_id":
-                    person_id,
-
-                    "name":
-                    matches[0]["name"],
-
-                    "best_score":
-                    round(
-                        best_score,
-                        4
-                    ),
-
-                    "avg_score":
-                    round(
-                        avg_score,
-                        4
-                    ),
-
-                    "matched_images":
-                    len(matches)
+                    "person_id": pid,
+                    "name": best["name"],
+                    "best_score": round(best["score"], 4),
+                    "mean_top3": round(float(np.mean(top3)), 4),
+                    "matched_images": len(matches),
+                    "best_image": best["image"],
                 }
             )
 
-        results.sort(
-            key=lambda x:
-            x["best_score"],
-            reverse=True
-        )
+        results.sort(key=lambda x: x["best_score"], reverse=True)
+        return results[:top_k]
 
-        return results
+    def search_face(self, image_path, top_k=5, threshold=0.4):
+        image = cv2.imread(image_path)
+        if image is None:
+            raise FileNotFoundError(f"Cannot load image: {image_path}")
+        return self.search_image(image, top_k=top_k, threshold=threshold)
