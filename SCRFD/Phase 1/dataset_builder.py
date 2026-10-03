@@ -140,7 +140,7 @@ class DatasetBuilder:
                 json.dump(metadata, file, indent=4)
 
             print(f"Saving metadata: {metadata_path}")
-            print(metadata)
+            # print(metadata)
 
         print("\n" + "=" * 60)
         print("DATASET CREATION SUMMARY")

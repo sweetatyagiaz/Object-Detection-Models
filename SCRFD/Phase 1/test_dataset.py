@@ -2,8 +2,8 @@ from scrfd_detector import SCRFDDetector
 from face_aligner import FaceAligner
 from dataset_builder import DatasetBuilder
 
-INPUT_DIR = "../../datasets/raw_data"
-OUTPUT_DIR = "../../datasets/dataset_scrfd"
+INPUT_DIR = "/home/rakesh/GitRepo/Object-Detection-Models/datasets/raw_data"
+OUTPUT_DIR = "/home/rakesh/GitRepo/Object-Detection-Models/datasets/dataset_scrfd"
 
 detector = SCRFDDetector()
 
