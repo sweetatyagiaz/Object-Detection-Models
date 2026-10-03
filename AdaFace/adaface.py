@@ -340,3 +340,129 @@ class AdaFace:
         if image is None:
             raise FileNotFoundError(f"Cannot load image: {image_path}")
         return self.search_image(image, top_k=top_k, threshold=threshold)
+
+    def search_from_faiss(
+        self,
+        image_path,
+        top_k=5,
+        threshold=0.4,
+        person_level=True,
+    ):
+        """
+        Search an image using existing FAISS index files.
+
+        Parameters
+        ----------
+        image_path : str
+            Query image path
+        top_k : int
+            Number of results
+        threshold : float
+            Minimum similarity score
+        person_level : bool
+            Aggregate by person or return raw image matches
+        """
+
+        # Load index if not loaded
+        if self.index is None:
+            self.load_index()
+
+        image = cv2.imread(image_path)
+        if image is None:
+            raise FileNotFoundError(
+                f"Unable to load image: {image_path}"
+            )
+
+        result = self.get_embedding(image)
+        if result is None:
+            return []
+
+        query_embedding, quality = result
+
+        query_embedding = (
+            query_embedding
+            .reshape(1, -1)
+            .astype(np.float32)
+        )
+
+        scores, indices = self.index.search(
+            query_embedding,
+            min(100, self.index.ntotal)
+        )
+
+        if not person_level:
+            matches = []
+
+            for score, idx in zip(scores[0], indices[0]):
+
+                if idx < 0:
+                    continue
+
+                if score < threshold:
+                    continue
+
+                meta = self.mapping[idx]
+
+                matches.append({
+                    "person_id": meta["person_id"],
+                    "name": meta["name"],
+                    "score": round(float(score), 4),
+                    "image": meta["image"],
+                    "quality": meta.get("quality")
+                })
+
+            return matches[:top_k]
+
+        # Person aggregation
+        persons = defaultdict(list)
+
+        for score, idx in zip(scores[0], indices[0]):
+
+            if idx < 0:
+                continue
+
+            meta = self.mapping[idx]
+
+            persons[meta["person_id"]].append({
+                "score": float(score),
+                "name": meta["name"],
+                "image": meta["image"]
+            })
+
+        results = []
+
+        for person_id, matches in persons.items():
+
+            matches.sort(
+                key=lambda x: x["score"],
+                reverse=True
+            )
+
+            best = matches[0]
+
+            if best["score"] < threshold:
+                continue
+
+            top3 = [
+                m["score"]
+                for m in matches[:3]
+            ]
+
+            results.append({
+                "person_id": person_id,
+                "name": best["name"],
+                "best_score": round(best["score"], 4),
+                "avg_score": round(
+                    float(np.mean(top3)),
+                    4
+                ),
+                "matched_images": len(matches),
+                "best_image": best["image"]
+            })
+
+        results.sort(
+            key=lambda x: x["best_score"],
+            reverse=True
+        )
+
+        return results[:top_k]
